@@ -7,6 +7,7 @@ import dataSource from './utils';
 const port = 5000
 
 const start = async (): Promise<void> => {
+  // TODO Initialize with Resolvers
   await dataSource.initialize()
   const server = new ApolloServer({});
 

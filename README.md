@@ -2,9 +2,9 @@
 <br>
 
 <h3>Description</h3>
-This is the repository for the Online Code Editor project (backend) made by Lucas Arrizabalaga, Maxime Derycke, Quentin Billac and Joeri Kaiser
+This is the repository for the Online Code Editor project (back-end) made by Lucas Arrizabalaga, Maxime Derycke, Quentin Billac and Joeri Kaiser.
 
-The aim of this repository is to provide a database and server to the front-end of the web-app
+The aim of this repository is to provide a database and server to the front-end of the web-app.
 
 <h3>Stack</h3>
 The tecnologies that are used in this project are:
