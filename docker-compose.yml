@@ -1,24 +1,28 @@
 version: '0.1'
 services:
-  postgres:
-    image: postgres:10.5
+  db:
+    image: postgres
     restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
     ports:
-      - '5432:5432'
+      - '5002:5432'
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-
+    environment:
+      POSTGRES_DB: "postgres"
+      PGUSER: "postgres"
+      POSTGRES_PASSWORD: example
+      PGDATA: /var/lib/postgresql/data/PGDATA
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 5s
+      timeout: 5s
+      retries: 10
   backend:
     build: .
     volumes:
       - ./src:/app/src
     ports:
-      - 5000:5000
-    healthcheck:
-      test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:5000'' --data ''{"query":"query { __typename }"}'' || exit 1'
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - 5001:5001
+    depends_on:
+      'db':
+        condition: service_healthy

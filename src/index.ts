@@ -3,13 +3,16 @@ import "reflect-metadata";
 import { ApolloServer } from "apollo-server";
  
 import dataSource from './utils';
+import { buildSchema } from 'type-graphql';
+import { SampleResolver } from './resolver/SampleResolver';
 
-const port = 5000
-
+const port = 5001
 const start = async (): Promise<void> => {
-  // TODO Initialize with Resolvers
   await dataSource.initialize()
-  const server = new ApolloServer({});
+  const schema = await buildSchema({
+    resolvers: [SampleResolver]
+  })
+  const server = new ApolloServer({ schema });
 
   try {
     const { url }: { url: string } = await server.listen({port});
