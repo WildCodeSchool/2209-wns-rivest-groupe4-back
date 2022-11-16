@@ -10,16 +10,12 @@ import * as dotenv from "dotenv";
 
 dotenv.config()
 
-console.log(process.env.JWT_SECRET_KEY)
-
 const port = process.env.GITHUB_AUTH_TOKEN ?? 5001
 const start = async (): Promise<void> => {
   await dataSource.initialize()
   const schema = await buildSchema({
     resolvers: [UserResolver],
     authChecker: ({context}, roles) => {
-      console.log("context", context)
-      console.log("roles in decorator", roles)
       if (context.email === undefined) {
         return false
       } else {

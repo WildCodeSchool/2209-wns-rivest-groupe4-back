@@ -35,8 +35,7 @@ export class UserResolver {
       throw new Error()
     }
     } catch (error) {
-      console.log(error)
-      throw new Error("Invalid Auth")
+      throw new Error(error, "Invalid Auth")
     }
   }
 
@@ -51,7 +50,6 @@ export class UserResolver {
     newUser.hashedPassword = await argon2.hash(password);
     newUser.pseudo = pseudo;
     const userFromDB = await dataSource.manager.save(User, newUser);
-    console.log(userFromDB);
     return userFromDB;
   }
 }
