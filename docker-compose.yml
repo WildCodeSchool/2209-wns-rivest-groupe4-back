@@ -25,6 +25,21 @@ services:
       - ./src:/app/src
     ports:
       - 5001:5001
+    healthcheck:
+      test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:5001'' --data ''{"query":"query { __typename }"}'' || exit 1'
+      interval: 5s
+      timeout: 5s
+      retries: 10
     depends_on:
       'db':
         condition: service_healthy
+  frontend:
+    build: ../codeless4-front
+    volumes:
+      - ../codeless4/src:/src
+    ports:
+      - 3000:3000
+    depends_on:
+      'backend' :
+        condition: service_healthy
+  

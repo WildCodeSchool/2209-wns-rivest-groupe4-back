@@ -34,8 +34,8 @@ export class UserResolver {
     } else {
       throw new Error()
     }
-    } catch (error) {
-      throw new Error(error, "Invalid Auth")
+    } catch{
+      throw new Error("Invalid Auth")
     }
   }
 
