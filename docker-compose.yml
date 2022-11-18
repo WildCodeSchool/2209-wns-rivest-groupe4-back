@@ -36,7 +36,10 @@ services:
   frontend:
     build: ../codeless4-front
     volumes:
-      - ../codeless4-front/src:/src
+      - ../codeless4-front/:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - 3000:3000
     depends_on:
