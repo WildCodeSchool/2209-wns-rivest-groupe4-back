@@ -1,10 +1,10 @@
-version: '0.1'
+version: "2.1"
 services:
   db:
     image: postgres
     restart: always
     ports:
-      - '5002:5432'
+      - "5002:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: example
       PGDATA: /var/lib/postgresql/data/PGDATA
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready']
+      test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -31,15 +31,17 @@ services:
       timeout: 5s
       retries: 10
     depends_on:
-      'db':
+      "db":
         condition: service_healthy
   frontend:
     build: ../codeless4-front
     volumes:
-      - ../codeless4/src:/src
+      - ../codeless4-front/:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - 3000:3000
     depends_on:
-      'backend' :
+      "backend":
         condition: service_healthy
-  
