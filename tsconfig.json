@@ -1,4 +1,5 @@
 {
+  "include": ["src", ".eslintrc.cjs", "postcss.config.cjs", "environment.d.ts"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     /* Projects */
