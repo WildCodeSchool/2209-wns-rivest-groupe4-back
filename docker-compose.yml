@@ -1,4 +1,4 @@
-version: "0.1"
+version: "2.1"
 services:
   db:
     image: postgres
@@ -36,7 +36,7 @@ services:
   frontend:
     build: ../codeless4-front
     volumes:
-      - ../codeless4/src:/src
+      - ../codeless4-front/src:/src
     ports:
       - 3000:3000
     depends_on:
