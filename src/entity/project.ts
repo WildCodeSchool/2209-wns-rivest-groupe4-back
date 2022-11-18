@@ -46,7 +46,7 @@ export class Project {
   folders: [Folder];
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.projects)
   user: User;
 
   @Field(() => Like)

@@ -21,7 +21,7 @@ export class Folder {
   name: string;
 
   @Field(() => Project)
-  @ManyToOne(() => Project, (project) => project.id)
+  @ManyToOne(() => Project, (project) => project.folders)
   project: Project;
 
   @Field(() => File)
