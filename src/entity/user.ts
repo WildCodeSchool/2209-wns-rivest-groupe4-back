@@ -47,4 +47,5 @@ export class User {
   @Field(() => [Report])
   @OneToMany(() => Report, (report) => report.user)
   reports: Report[];
+
 }
