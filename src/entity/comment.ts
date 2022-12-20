@@ -1,11 +1,11 @@
 import { Field, ID, ObjectType } from "type-graphql";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Project } from "./project";
-import { User } from "./user";
+import Project from "./project";
+import User from "./user";
 
 @ObjectType()
 @Entity()
-export class Comment {
+export default class Comment {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: number;
