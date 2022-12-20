@@ -1,13 +1,13 @@
 import { Field, ID, Int, ObjectType } from "type-graphql";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Comment } from "./comment";
-import { Like } from "./like";
-import { Project } from "./project";
-import { Report } from "./report";
+import Comment from "./comment";
+import Like from "./like";
+import Project from "./project";
+import Report from "./report";
 
 @ObjectType()
 @Entity()
-export class User {
+export default class User {
   @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -47,5 +47,4 @@ export class User {
   @Field(() => [Report])
   @OneToMany(() => Report, (report) => report.user)
   reports: Report[];
-
 }
