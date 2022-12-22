@@ -2,7 +2,7 @@ import * as argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
-import User from "../entity/user";
+import {User} from "../entity/user";
 import dataSource from "../utils";
 
 @Resolver(User)
