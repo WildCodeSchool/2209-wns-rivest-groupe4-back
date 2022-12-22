@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 import { buildSchema } from "type-graphql";
 import * as dotenv from "dotenv";
-import dataSource from "./utils";
+import dataSource from "./dataSource";
 import UserResolver from "./resolver/userResolver";
 
 dotenv.config();
