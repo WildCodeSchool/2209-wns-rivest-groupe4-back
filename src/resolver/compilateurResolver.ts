@@ -1,8 +1,6 @@
-import * as argon2 from "argon2";
-import jwt from "jsonwebtoken";
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
-import { exec, execFile, ChildProcess } from "child_process";
-import { Any, ChildEntity } from "typeorm";
+import { Arg, Query, Resolver } from "type-graphql";
+import { exec } from "child_process";
+import fs from "fs-extra";
 
 function execShellCommand(cmd: string) {
   return new Promise<string>((resolve, reject) => {
@@ -20,9 +18,14 @@ function execShellCommand(cmd: string) {
 export default class CompilateurResolver {
   @Query(() => String)
   async postCode(@Arg("code") code: string): Promise<string> {
+    try {
+      fs.writeFile("./src/child-processes/code.js", code);
+    } catch {
+      console.warn("error save file !");
+    }
     const response = await execShellCommand(
       "node ./src/child-processes/code.js",
     );
-    return response;
+    return response.replace("/n", "");
   }
 }

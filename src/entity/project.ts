@@ -8,15 +8,16 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Comment } from "./comment";
-import { Folder } from "./folder";
-import { Like } from "./like";
-import { Report } from "./report";
-import { User } from "./user";
+
+import Comment from "./comment";
+import Folder from "./folder";
+import Like from "./like";
+import Report from "./report";
+import User from "./user";
 
 @ObjectType()
 @Entity()
-export class Project {
+export default class Project {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: number;

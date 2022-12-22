@@ -6,12 +6,12 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { File } from "./file";
-import { Project } from "./project";
+import File from "./file";
+import Project from "./project";
 
 @ObjectType()
 @Entity()
-export class Folder {
+export default class Folder {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: number;

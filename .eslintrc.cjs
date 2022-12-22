@@ -26,6 +26,13 @@ module.exports = {
     "@typescript-eslint/return-await": "off",
     "no-void": "off",
     "class-methods-use-this": "off",
+    "import/no-cycle": [
+      "off",
+      {
+        maxDepth: 2,
+        ignoreExternal: true,
+      },
+    ],
     "no-restricted-syntax": [
       "error",
       {

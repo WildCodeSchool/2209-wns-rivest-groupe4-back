@@ -1,6 +1,1 @@
-/* eslint-disable no-restricted-syntax */
-const test = () => {
-  return "testtttte";
-};
-
-console.log(test());
+console.warn(5 + 2);

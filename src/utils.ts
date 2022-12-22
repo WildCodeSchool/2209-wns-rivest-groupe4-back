@@ -1,12 +1,11 @@
 import { DataSource } from "typeorm";
-import { Comment } from "./entity/comment";
-import { File } from "./entity/file";
-import { Folder } from "./entity/folder";
-import { Like } from "./entity/like";
-import { Project } from "./entity/project";
-import { Report } from "./entity/report";
-import { User } from "./entity/user";
-
+import Comment from "./entity/comment";
+import File from "./entity/file";
+import Folder from "./entity/folder";
+import Like from "./entity/like";
+import Project from "./entity/project";
+import Report from "./entity/report";
+import User from "./entity/user";
 
 const dataSource = new DataSource({
   type: "postgres",
