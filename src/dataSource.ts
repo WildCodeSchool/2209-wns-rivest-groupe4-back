@@ -16,7 +16,7 @@ const dataSource = new DataSource({
   database: "postgres",
   synchronize: true,
   entities: [User, Project, Folder, File, Like, Comment, Report],
-  logging: [],
+  logging: ["error"],
 });
 
 export default dataSource;
