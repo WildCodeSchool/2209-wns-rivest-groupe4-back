@@ -61,8 +61,6 @@ export default class UserResolver {
       const userFromDB = await dataSource.manager.save(User, newUser);
       return userFromDB;
     } catch (error) {
-      console.log(error);
-
       throw new Error("Error try again with an other email or pseudo");
     }
   }
