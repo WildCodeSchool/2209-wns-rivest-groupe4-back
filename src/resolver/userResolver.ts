@@ -40,12 +40,12 @@ export default class UserResolver {
     }
   }
 
-  @Mutation(() => User)
+  @Mutation(() => String)
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Arg("pseudo") pseudo: string,
-  ): Promise<User> {
+  ): Promise<string> {
     try {
       if (
         !Validate.email(email) ||
@@ -54,12 +54,21 @@ export default class UserResolver {
       ) {
         throw Error("Invalid email, password or pseudo");
       }
+      if (process.env.JWT_SECRET_KEY === undefined) {
+        throw new Error();
+      }
+
       const newUser = new User();
       newUser.email = email;
       newUser.hashedPassword = await argon2.hash(password);
       newUser.pseudo = pseudo;
       const userFromDB = await dataSource.manager.save(User, newUser);
-      return userFromDB;
+
+      const token = jwt.sign(
+        { email: userFromDB.email },
+        process.env.JWT_SECRET_KEY,
+      );
+      return token;
     } catch (error) {
       throw new Error("Error try again with an other email or pseudo");
     }
