@@ -5,8 +5,9 @@ import jwt from "jsonwebtoken";
 
 import { buildSchema } from "type-graphql";
 import * as dotenv from "dotenv";
-import dataSource from "./utils";
+import dataSource from "./dataSource";
 import UserResolver from "./resolver/userResolver";
+import CompilateurResolver from "./resolver/compilateurResolver";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const port = process.env.GITHUB_AUTH_TOKEN ?? 5001;
 const start = async (): Promise<void> => {
   await dataSource.initialize();
   const schema = await buildSchema({
-    resolvers: [UserResolver],
+    resolvers: [UserResolver, CompilateurResolver],
     authChecker: ({ context }, roles) => {
       if (context.email === undefined) {
         return false;

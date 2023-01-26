@@ -15,6 +15,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    tsconfigRootDir: __dirname,
     project: ["./tsconfig.json"],
   },
   plugins: ["@typescript-eslint", "prettier"],
@@ -25,6 +26,13 @@ module.exports = {
     "@typescript-eslint/return-await": "off",
     "no-void": "off",
     "class-methods-use-this": "off",
+    "import/no-cycle": [
+      "off",
+      {
+        maxDepth: 2,
+        ignoreExternal: true,
+      },
+    ],
     "no-restricted-syntax": [
       "error",
       {
@@ -32,6 +40,12 @@ module.exports = {
           "CallExpression[callee.object.name='console'][callee.property.name!=/^(error|warn)$/]",
         message:
           "You can only call the error() and warn() functions from the console object",
+      },
+    ],
+    "prettier/prettier": [
+      "error",
+      {
+        endOfLine: "auto",
       },
     ],
     "@typescript-eslint/no-misused-promises": [

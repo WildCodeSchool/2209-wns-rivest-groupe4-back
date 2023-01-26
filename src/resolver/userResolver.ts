@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import User from "../entity/user";
-import dataSource from "../utils";
+import dataSource from "../dataSource";
+import { Validate } from "../utils/regex";
 
 @Resolver(User)
 export default class UserResolver {
@@ -39,17 +40,37 @@ export default class UserResolver {
     }
   }
 
-  @Mutation(() => User)
+  @Mutation(() => String)
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Arg("pseudo") pseudo: string,
-  ): Promise<User> {
-    const newUser = new User();
-    newUser.email = email;
-    newUser.hashedPassword = await argon2.hash(password);
-    newUser.pseudo = pseudo;
-    const userFromDB = await dataSource.manager.save(User, newUser);
-    return userFromDB;
+  ): Promise<string> {
+    try {
+      if (
+        !Validate.email(email) ||
+        !Validate.password(password) ||
+        !Validate.pseudo(pseudo)
+      ) {
+        throw Error("Invalid email, password or pseudo");
+      }
+      if (process.env.JWT_SECRET_KEY === undefined) {
+        throw new Error();
+      }
+
+      const newUser = new User();
+      newUser.email = email;
+      newUser.hashedPassword = await argon2.hash(password);
+      newUser.pseudo = pseudo;
+      const userFromDB = await dataSource.manager.save(User, newUser);
+
+      const token = jwt.sign(
+        { email: userFromDB.email },
+        process.env.JWT_SECRET_KEY,
+      );
+      return token;
+    } catch (error) {
+      throw new Error("Error try again with an other email or pseudo");
+    }
   }
 }
