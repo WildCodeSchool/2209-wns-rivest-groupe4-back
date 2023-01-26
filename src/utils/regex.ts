@@ -1,4 +1,6 @@
-export class Validate {
+/* eslint-disable no-useless-escape */
+/* eslint-disable prefer-regex-literals */
+export default class Validate {
   private static regex: RegExp;
 
   static email(email: string): boolean {
@@ -10,7 +12,7 @@ export class Validate {
   }
 
   static password(password: string): boolean {
-    //Contain at least one uppercase letter, one lowercase letter and one number. Be at min 8 and max 25 characters long. Accept special character.
+    // Contain at least one uppercase letter, one lowercase letter and one number. Be at min 8 and max 25 characters long. Accept special character.
     this.regex = new RegExp(
       /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[\w~@#$%^&*+=`|{}:;!.?\"()\[\]-]{8,25}$/,
     );
