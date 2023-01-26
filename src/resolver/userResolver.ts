@@ -4,7 +4,7 @@ import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import User from "../entity/user";
 import dataSource from "../dataSource";
-import { Validate } from "../utils/regex";
+import Validate from "../utils/regex";
 
 @Resolver(User)
 export default class UserResolver {
