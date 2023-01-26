@@ -1,3 +1,6 @@
+FROM adminer
+COPY hydra.css /var/www/html/adminer.css
+
 FROM node:lts-alpine
 
 RUN apk --no-cache add curl
@@ -16,3 +19,5 @@ COPY src src
 COPY tsconfig.json tsconfig.json
 
 CMD npm start
+
+

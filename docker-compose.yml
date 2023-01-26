@@ -17,6 +17,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./hydra.css:/var/www/html/adminer.css
+    links:
+      - db
   backend:
     build: .
     env_file:
