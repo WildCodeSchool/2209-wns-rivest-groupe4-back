@@ -14,10 +14,6 @@ app.use(bodyParser.json());
 
 app.use("/compiler/file", fileRouter);
 
-app.get("/", (req, res) => {
-  res.send("Express + TypeScript Server");
-});
-
 app.listen(PORT, () => {
   console.warn(`[server]: Server is running at http://localhost:${PORT}`);
 });
