@@ -27,8 +27,8 @@ services:
       - db
   backend:
     build: .
-    env_file:
-      - .env
+    environment:
+      - PORT=7008
     volumes:
       - ./src:/app/src
     ports:
@@ -50,6 +50,13 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     ports:
       - 3000:3000
+    depends_on:
+      "backend":
+        condition: service_healthy
+  compiler:
+    build: ./compiler
+    ports:
+      - 7008:7008
     depends_on:
       "backend":
         condition: service_healthy
