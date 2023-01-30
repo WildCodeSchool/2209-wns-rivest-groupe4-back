@@ -8,6 +8,7 @@ COPY package-lock.json package-lock.json
 RUN npm i
 
 COPY src src
+COPY index.ts index.ts
 
 COPY tsconfig.json tsconfig.json
 
