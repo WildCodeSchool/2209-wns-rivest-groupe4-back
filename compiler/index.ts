@@ -7,7 +7,7 @@ import fileRouter from "./src/file/file.router";
 dotenv.config();
 
 const app: Express = express();
-const PORT: number = parseInt(process.env.PORT as string, 10);
+const PORT: number = parseInt(process.env.PORT as string, 10) ?? 7008;
 
 app.use(cors());
 app.use(bodyParser.json());
