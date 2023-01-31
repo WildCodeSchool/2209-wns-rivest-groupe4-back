@@ -24,7 +24,7 @@ export default class UserResolver {
   async getToken(
     @Arg("email") email: string,
     @Arg("password") password: string,
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
         email,
