@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec ts-node-dev src/index.ts",
+    "start": "nodemon -L --exec ts-node-dev src/index.ts",
     "lint": "echo '----- Checking Backend...' && prettier --debug-check . && eslint --ext .ts . && echo '----- Done!'",
     "fix": "prettier --write . && eslint --fix --ext ts. ",
     "prepare": "husky install"

@@ -1,5 +1,11 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import Project from "./project";
 import User from "./user";
 
@@ -14,11 +20,17 @@ export default class Comment {
   @Column()
   comment: string;
 
+  @Field()
+  @CreateDateColumn()
+  createdAt: Date;
+
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.comments)
   user: User;
 
   @Field(() => Project)
-  @ManyToOne(() => Project, (project) => project.comments)
+  @ManyToOne(() => Project, (project) => project.comments, {
+    onDelete: "CASCADE",
+  })
   project: Project;
 }

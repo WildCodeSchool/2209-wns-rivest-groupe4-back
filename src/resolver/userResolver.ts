@@ -13,11 +13,18 @@ export default class UserResolver {
     return await dataSource.manager.find(User);
   }
 
-  @Query(() => String)
+  @Query(() => [User])
+  async getOneUser(@Arg("id") id: string): Promise<User> {
+    return await dataSource.manager.getRepository(User).findOneByOrFail({
+      id,
+    });
+  }
+
+  @Query(() => User)
   async getToken(
     @Arg("email") email: string,
     @Arg("password") password: string,
-  ): Promise<string> {
+  ): Promise<unknown> {
     try {
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
         email,
@@ -31,7 +38,7 @@ export default class UserResolver {
           { email: userFromDB.email },
           process.env.JWT_SECRET_KEY,
         );
-        return token;
+        return { ...userFromDB, token };
       } else {
         throw new Error();
       }
@@ -68,6 +75,43 @@ export default class UserResolver {
         { email: userFromDB.email },
         process.env.JWT_SECRET_KEY,
       );
+      return token;
+    } catch (error) {
+      throw new Error("Error try again with an other email or pseudo");
+    }
+  }
+
+  @Mutation(() => String)
+  async modifyUser(
+    @Arg("email") email: string,
+    @Arg("password") password: string,
+    @Arg("pseudo") pseudo: string,
+    @Arg("id") id: string,
+  ): Promise<string> {
+    try {
+      if (
+        !Validate.email(email) ||
+        !Validate.password(password) ||
+        !Validate.pseudo(pseudo)
+      ) {
+        throw Error("Invalid email, password or pseudo");
+      }
+      if (process.env.JWT_SECRET_KEY === undefined) {
+        throw new Error();
+      }
+
+      const userToUpdate = await dataSource.manager
+        .getRepository(User)
+        .findOneByOrFail({
+          id,
+        });
+
+      userToUpdate.email = email;
+      userToUpdate.hashedPassword = await argon2.hash(password);
+      userToUpdate.pseudo = pseudo;
+      const userFromDB = await dataSource.manager.save(User, userToUpdate);
+
+      const token = jwt.sign({ ...userFromDB }, process.env.JWT_SECRET_KEY);
       return token;
     } catch (error) {
       throw new Error("Error try again with an other email or pseudo");
