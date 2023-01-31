@@ -20,15 +20,19 @@ export default class Folder {
   @Column()
   name: string;
 
-  @Field(() => Folder, { nullable: true })
-  @ManyToOne(() => Folder, (folder) => folder.parentFolder)
+  @Field(() => [Folder], { nullable: true })
+  @ManyToOne(() => Folder, (folder) => folder.parentFolder, {
+    onDelete: "CASCADE",
+  })
   parentFolder?: Folder;
 
   @Field(() => Project)
-  @ManyToOne(() => Project, (project) => project.folders)
+  @ManyToOne(() => Project, (project) => project.folders, {
+    onDelete: "CASCADE",
+  })
   project: Project;
 
   @Field(() => File)
-  @OneToMany(() => File, (file) => file.folder)
+  @OneToMany(() => File, (file) => file.folder, { onDelete: "CASCADE" })
   files: [File];
 }

@@ -7,19 +7,57 @@ import User from "../entity/user";
 @Resolver(Project)
 export default class ProjectResolver {
   @Query(() => [Project])
-  async getProjectsWithLikes() {
-    const response = await dataSource
-      .getRepository(Project)
-      .find({ relations: { likes: true } });
-    console.warn(response[0].likes);
+  async getAllProjects() {
+    const response = await dataSource.getRepository(Project).find({
+      relations: {
+        likes: true,
+        folders: true,
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
     return response;
   }
 
   @Query(() => [Project])
-  async getOneProject(@Arg("id") id: number): Promise<Project> {
-    return await dataSource.manager.getRepository(Project).findOneByOrFail({
-      id,
+  async getProjectsByUserId(@Arg("userId") userId: string) {
+    const user = await dataSource.manager.findOneByOrFail(User, {
+      id: userId,
     });
+
+    const response = await dataSource.getRepository(Project).find({
+      where: { user },
+      relations: {
+        likes: true,
+        folders: true,
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+    return response;
+  }
+
+  @Query(() => Project)
+  async getOneProject(@Arg("id") id: number): Promise<Project> {
+    const project = await dataSource.manager.getRepository(Project).findOne({
+      where: {
+        id,
+      },
+      relations: {
+        likes: true,
+        folders: true,
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+    if (project != null) {
+      return project;
+    } else {
+      throw new Error("Project not found");
+    }
   }
 
   @Mutation(() => String)
@@ -53,27 +91,58 @@ export default class ProjectResolver {
   @Mutation(() => String)
   async modifyProject(
     @Arg("id") id: number,
-    @Arg("public") isPublic: boolean,
-    @Arg("name") name: string,
-    @Arg("description") description: string,
+    @Arg("name", { nullable: true }) name?: string,
+    @Arg("description", { nullable: true }) description?: string,
+    @Arg("public", { nullable: true }) isPublic?: boolean,
   ): Promise<string> {
-    try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+    if (name == null && isPublic == null && description == null) {
+      throw new Error(
+        `No change, specify argument to change for the project ${id.toString()}`,
+      );
+    }
 
-      const projectToUpdate = await dataSource.manager
-        .getRepository(Project)
-        .findOneByOrFail({
-          id,
-        });
+    const projectToUpdate = await dataSource.manager
+      .getRepository(Project)
+      .findOneByOrFail({
+        id,
+      });
 
+    if (isPublic != null) {
       projectToUpdate.public = isPublic;
+    }
+    if (name != null) {
       projectToUpdate.name = name;
+    }
+    if (description != null) {
       projectToUpdate.description = description;
-      await dataSource.manager.save(Project, projectToUpdate);
+    }
 
+    try {
+      projectToUpdate.updatedAt = new Date();
+      await dataSource.manager.save(Project, projectToUpdate);
       return `Project modified`;
+    } catch (error) {
+      throw new Error("Error: Project not found");
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteProject(@Arg("id") id: number): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+    const projectToDelete = await dataSource.manager
+      .getRepository(Project)
+      .findOneByOrFail({
+        id,
+      });
+
+    try {
+      await dataSource.manager.getRepository(Project).remove(projectToDelete);
+      return `Project deleted`;
     } catch (error) {
       throw new Error("Error: Project not found");
     }

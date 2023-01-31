@@ -11,14 +11,16 @@ export default class FolderResolver {
   async getAllFolders() {
     const response = await dataSource.getRepository(Folder).find();
     console.warn(response);
-    return await dataSource.getRepository(Folder).find();
+    return await dataSource
+      .getRepository(Folder)
+      .find({ relations: { parentFolder: true } });
   }
 
   @Mutation(() => String)
   async addFolder(
     @Arg("name") name: string,
-    @Arg("parentFolderId") parentFolderId: number,
     @Arg("projectId") projectId: number,
+    @Arg("parentFolderId", { nullable: true }) parentFolderId?: number,
   ): Promise<string> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
@@ -33,11 +35,13 @@ export default class FolderResolver {
         });
       folder.name = name;
 
-      folder.parentFolder = await dataSource.manager
-        .getRepository(Folder)
-        .findOneByOrFail({
-          id: parentFolderId,
-        });
+      if (parentFolderId != null) {
+        folder.parentFolder = await dataSource.manager
+          .getRepository(Folder)
+          .findOneByOrFail({
+            id: parentFolderId,
+          });
+      }
 
       await dataSource.manager.save(Folder, folder);
 

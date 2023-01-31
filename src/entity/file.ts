@@ -22,6 +22,6 @@ export default class File {
   extension: string;
 
   @Field(() => Folder)
-  @ManyToOne(() => Folder, (folder) => folder.files)
+  @ManyToOne(() => Folder, (folder) => folder.files, { onDelete: "CASCADE" })
   folder: Folder;
 }

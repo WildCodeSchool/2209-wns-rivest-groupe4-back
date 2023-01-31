@@ -11,7 +11,9 @@ export default class LikeResolver {
   async getAllLikes() {
     const response = await dataSource.getRepository(Like).find();
     console.warn(response);
-    return await dataSource.getRepository(Like).find();
+    return await dataSource
+      .getRepository(Like)
+      .find({ relations: { project: true, user: true } });
   }
 
   @Mutation(() => String)
@@ -25,14 +27,21 @@ export default class LikeResolver {
       }
 
       const like = new Like();
+
       like.project = await dataSource.manager
         .getRepository(Project)
         .findOneByOrFail({
           id: idProject,
         });
+
+      console.warn(like.project);
+
       like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
         id: idUser,
       });
+
+      console.warn(like.user);
+      console.warn(like);
 
       await dataSource.manager.save(Like, like);
 

@@ -29,6 +29,8 @@ export default class Report {
   user: User;
 
   @Field(() => Project)
-  @ManyToOne(() => Project, (project) => project.reports)
+  @ManyToOne(() => Project, (project) => project.reports, {
+    onDelete: "CASCADE",
+  })
   project: Project;
 }
