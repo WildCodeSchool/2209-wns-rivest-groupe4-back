@@ -17,10 +17,6 @@ export default class File {
   @Column()
   content: string;
 
-  @Field(() => Boolean)
-  @Column()
-  public: boolean;
-
   @Field(() => String)
   @Column()
   extension: string;

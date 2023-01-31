@@ -20,6 +20,10 @@ export default class Folder {
   @Column()
   name: string;
 
+  @Field(() => Folder, { nullable: true })
+  @ManyToOne(() => Folder, (folder) => folder.parentFolder)
+  parentFolder?: Folder;
+
   @Field(() => Project)
   @ManyToOne(() => Project, (project) => project.folders)
   project: Project;

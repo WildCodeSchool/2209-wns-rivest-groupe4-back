@@ -50,9 +50,9 @@ export default class Project {
   @ManyToOne(() => User, (user) => user.projects)
   user: User;
 
-  @Field(() => Like)
+  @Field(() => Like, { nullable: true })
   @OneToMany(() => Like, (like) => like.project)
-  likes: Like[];
+  likes?: Like[];
 
   @Field(() => Comment)
   @OneToMany(() => Comment, (comment) => comment.project)

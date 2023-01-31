@@ -7,7 +7,13 @@ import { buildSchema } from "type-graphql";
 import * as dotenv from "dotenv";
 import dataSource from "./dataSource";
 import UserResolver from "./resolver/userResolver";
+import ProjectResolver from "./resolver/projectResolver";
 import CompilateurResolver from "./resolver/compilateurResolver";
+import LikeResolver from "./resolver/likeResolver";
+import FileResolver from "./resolver/fileResolver";
+import FolderResolver from "./resolver/folderResolver";
+import ReportResolver from "./resolver/reportResolver";
+import CommentResolver from "./resolver/commentResolver";
 
 dotenv.config();
 
@@ -15,7 +21,16 @@ const port = process.env.GITHUB_AUTH_TOKEN ?? 5001;
 const start = async (): Promise<void> => {
   await dataSource.initialize();
   const schema = await buildSchema({
-    resolvers: [UserResolver, CompilateurResolver],
+    resolvers: [
+      UserResolver,
+      CompilateurResolver,
+      ProjectResolver,
+      LikeResolver,
+      FileResolver,
+      FolderResolver,
+      ReportResolver,
+      CommentResolver,
+    ],
     authChecker: ({ context }, roles) => {
       if (context.email === undefined) {
         return false;

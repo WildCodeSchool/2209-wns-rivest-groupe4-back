@@ -985,6 +985,9 @@ code {
 .js .column {
   background: #221f2e;
 }
+.jush {
+  color: white;
+}
 .sqlarea.jush-sql.jush {
   filter: sepia() invert();
   background: transparent;
