@@ -76,13 +76,13 @@ export default class ProjectResolver {
     }
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Project)
   async createProject(
     @Arg("public") isPublic: boolean,
     @Arg("name") name: string,
     @Arg("description") description: string,
     @Arg("userId") userId: string,
-  ): Promise<string> {
+  ): Promise<Project> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
@@ -118,7 +118,10 @@ export default class ProjectResolver {
       file.content = "Console.log('Hello World')";
       await dataSource.manager.save(File, file);
 
-      return `Project created`;
+      folderInDB.files = [file];
+      projectInDB.folders = [folderInDB];
+
+      return projectInDB;
     } catch (error) {
       throw new Error("Error: try again with an other body");
     }

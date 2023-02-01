@@ -8,11 +8,18 @@ import Project from "../entity/project";
 export default class FolderResolver {
   @Query(() => [Folder])
   async getAllFolders() {
-    const response = await dataSource.getRepository(Folder).find();
-    console.warn(response);
     return await dataSource
       .getRepository(Folder)
-      .find({ relations: { parentFolder: true } });
+      .find({ relations: { parentFolder: true, project: true } });
+  }
+
+  @Query(() => [Folder])
+  async getAllFoldersByProjectId(@Arg("idProject") idProject: number) {
+    const response = await dataSource.getRepository(Folder).find({
+      where: { project: { id: idProject } },
+      relations: { files: true },
+    });
+    return response;
   }
 
   @Mutation(() => String)
