@@ -1,10 +1,18 @@
 import * as argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Mutation, Query, Resolver, ObjectType, Field } from "type-graphql";
 
 import User from "../entity/user";
 import dataSource from "../dataSource";
 import Validate from "../utils/regex";
+
+@ObjectType()
+class TokenWithUser {
+  @Field()
+  token: string;
+  @Field(() => User)
+  user: User
+}
 
 @Resolver(User)
 export default class UserResolver {
@@ -20,11 +28,11 @@ export default class UserResolver {
     });
   }
 
-  @Query(() => User)
-  async getToken(
+  @Query(() => TokenWithUser)
+  async getTokenWithUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
-  ): Promise<unknown> {
+  ): Promise<TokenWithUser> {
     try {
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
         email,
@@ -38,7 +46,7 @@ export default class UserResolver {
           { email: userFromDB.email },
           process.env.JWT_SECRET_KEY,
         );
-        return { ...userFromDB, token };
+        return { token, user: userFromDB};
       } else {
         throw new Error();
       }
