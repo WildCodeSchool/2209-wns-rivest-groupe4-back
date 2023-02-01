@@ -3,6 +3,8 @@ import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import Project from "../entity/project";
 import dataSource from "../dataSource";
 import User from "../entity/user";
+import Folder from "../entity/folder";
+import File from "../entity/file";
 
 @Resolver(Project)
 export default class ProjectResolver {
@@ -10,8 +12,22 @@ export default class ProjectResolver {
   async getAllProjects() {
     const response = await dataSource.getRepository(Project).find({
       relations: {
-        likes: true,
-        folders: true,
+        likes: { user: true },
+        folders: { files: true },
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+    return response;
+  }
+
+  @Query(() => [Project])
+  async getSharedProjects() {
+    const response = await dataSource.getRepository(Project).find({
+      where: { public: true },
+      relations: {
+        likes: { user: true },
         comments: true,
         reports: true,
         user: true,
@@ -60,13 +76,13 @@ export default class ProjectResolver {
     }
   }
 
-  @Mutation(() => String)
+  @Mutation(() => Project)
   async createProject(
     @Arg("public") isPublic: boolean,
     @Arg("name") name: string,
     @Arg("description") description: string,
     @Arg("userId") userId: string,
-  ): Promise<string> {
+  ): Promise<Project> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
@@ -80,9 +96,32 @@ export default class ProjectResolver {
         id: userId,
       });
       newProject.user = user;
-      await dataSource.manager.save(Project, newProject);
+      const projectInDB = await dataSource.manager.save(Project, newProject);
 
-      return `Project created`;
+      const folder = new Folder();
+      folder.project = await dataSource.manager
+        .getRepository(Project)
+        .findOneByOrFail({
+          id: projectInDB.id,
+        });
+      folder.name = "MyProject";
+      const folderInDB = await dataSource.manager.save(Folder, folder);
+
+      const file = new File();
+      file.folder = await dataSource.manager
+        .getRepository(Folder)
+        .findOneByOrFail({
+          id: folderInDB.id,
+        });
+      file.name = "Index";
+      file.extension = "js";
+      file.content = "Console.log('Hello World')";
+      await dataSource.manager.save(File, file);
+
+      folderInDB.files = [file];
+      projectInDB.folders = [folderInDB];
+
+      return projectInDB;
     } catch (error) {
       throw new Error("Error: try again with an other body");
     }

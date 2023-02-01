@@ -25,7 +25,7 @@ export default class Report {
   createdAt: Date;
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.reports)
+  @ManyToOne(() => User, (user) => user.reports, { onDelete: "CASCADE" })
   user: User;
 
   @Field(() => Project)
