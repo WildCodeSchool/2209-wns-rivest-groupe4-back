@@ -1,7 +1,6 @@
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import dataSource from "../dataSource";
-import File from "../entity/file";
 import Folder from "../entity/folder";
 import Project from "../entity/project";
 
@@ -22,30 +21,73 @@ export default class FolderResolver {
     @Arg("projectId") projectId: number,
     @Arg("parentFolderId", { nullable: true }) parentFolderId?: number,
   ): Promise<string> {
-    try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
 
-      const folder = new Folder();
-      folder.project = await dataSource.manager
-        .getRepository(Project)
+    const folder = new Folder();
+    folder.project = await dataSource.manager
+      .getRepository(Project)
+      .findOneByOrFail({
+        id: projectId,
+      });
+
+    folder.name = name;
+
+    if (parentFolderId != null) {
+      folder.parentFolder = await dataSource.manager
+        .getRepository(Folder)
         .findOneByOrFail({
-          id: projectId,
+          id: parentFolderId,
         });
-      folder.name = name;
-
-      if (parentFolderId != null) {
-        folder.parentFolder = await dataSource.manager
-          .getRepository(Folder)
-          .findOneByOrFail({
-            id: parentFolderId,
-          });
-      }
-
+    }
+    try {
       await dataSource.manager.save(Folder, folder);
-
       return `Folder saved`;
+    } catch (error) {
+      throw new Error("Error: try again with an other user or project");
+    }
+  }
+
+  @Mutation(() => String)
+  async renameFolder(
+    @Arg("name") name: string,
+    @Arg("folderId") folderId: number,
+  ): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+
+    const folderToRename = await dataSource.manager
+      .getRepository(Folder)
+      .findOneByOrFail({
+        id: folderId,
+      });
+    folderToRename.name = name;
+
+    try {
+      await dataSource.manager.save(Folder, folderToRename);
+      return `Folder's name modified`;
+    } catch (error) {
+      throw new Error("Error: try again with an other user or project");
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteFolder(@Arg("folderId") folderId: number): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+
+    const folderToRemove = await dataSource.manager
+      .getRepository(Folder)
+      .findOneByOrFail({
+        id: folderId,
+      });
+
+    try {
+      await dataSource.manager.getRepository(Folder).remove(folderToRemove);
+      return `Folder deleted`;
     } catch (error) {
       throw new Error("Error: try again with an other user or project");
     }

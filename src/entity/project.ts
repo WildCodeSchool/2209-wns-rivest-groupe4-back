@@ -42,7 +42,7 @@ export default class Project {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field(() => Folder)
+  @Field(() => [Folder])
   @OneToMany(() => Folder, (folder) => folder.project)
   folders: [Folder];
 

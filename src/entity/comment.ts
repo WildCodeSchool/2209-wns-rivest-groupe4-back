@@ -25,7 +25,7 @@ export default class Comment {
   createdAt: Date;
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.comments)
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })
   user: User;
 
   @Field(() => Project)

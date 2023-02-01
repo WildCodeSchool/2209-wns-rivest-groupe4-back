@@ -32,7 +32,7 @@ export default class Folder {
   })
   project: Project;
 
-  @Field(() => File)
-  @OneToMany(() => File, (file) => file.folder, { onDelete: "CASCADE" })
+  @Field(() => [File])
+  @OneToMany(() => File, (file) => file.folder)
   files: [File];
 }

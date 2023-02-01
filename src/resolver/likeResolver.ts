@@ -9,8 +9,6 @@ import User from "../entity/user";
 export default class LikeResolver {
   @Query(() => [Like])
   async getAllLikes() {
-    const response = await dataSource.getRepository(Like).find();
-    console.warn(response);
     return await dataSource
       .getRepository(Like)
       .find({ relations: { project: true, user: true } });
@@ -21,31 +19,54 @@ export default class LikeResolver {
     @Arg("idUser") idUser: string,
     @Arg("idProject") idProject: number,
   ): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+    const likeFromDB = await dataSource.manager
+      .getRepository(Like)
+      .find({ where: { user: { id: idUser }, project: { id: idProject } } });
+
+    if (likeFromDB.length > 0) {
+      throw new Error("Like already existing with this user on this project");
+    }
+
+    const like = new Like();
+
+    like.project = await dataSource.manager
+      .getRepository(Project)
+      .findOneByOrFail({
+        id: idProject,
+      });
+
+    like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
+      id: idUser,
+    });
+
+    try {
+      await dataSource.manager.save(Like, like);
+      return `Like saved`;
+    } catch (error) {
+      throw new Error("Error: try again with an other user or project");
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteLike(
+    @Arg("idUser") idUser: string,
+    @Arg("idProject") idProject: number,
+  ): Promise<string> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
       }
 
-      const like = new Like();
+      const like = await dataSource.manager
+        .getRepository(Like)
+        .find({ where: { user: { id: idUser }, project: { id: idProject } } });
 
-      like.project = await dataSource.manager
-        .getRepository(Project)
-        .findOneByOrFail({
-          id: idProject,
-        });
+      await dataSource.manager.getRepository(Like).remove(like);
 
-      console.warn(like.project);
-
-      like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
-        id: idUser,
-      });
-
-      console.warn(like.user);
-      console.warn(like);
-
-      await dataSource.manager.save(Like, like);
-
-      return `Like saved`;
+      return `Like deleted`;
     } catch (error) {
       throw new Error("Error: try again with an other user or project");
     }

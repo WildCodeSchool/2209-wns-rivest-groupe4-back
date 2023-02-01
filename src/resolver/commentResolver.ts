@@ -9,8 +9,6 @@ import Comment from "../entity/comment";
 export default class CommentResolver {
   @Query(() => [Comment])
   async getAllComments() {
-    const response = await dataSource.getRepository(Comment).find();
-    console.warn(response);
     return await dataSource.getRepository(Comment).find();
   }
 
@@ -41,6 +39,25 @@ export default class CommentResolver {
       await dataSource.manager.save(Comment, newComment);
 
       return `Comment saved`;
+    } catch (error) {
+      throw new Error("Error: try again with an other user or project");
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteComment(@Arg("idComment") idComment: number): Promise<string> {
+    try {
+      if (process.env.JWT_SECRET_KEY === undefined) {
+        throw new Error();
+      }
+
+      const commentToDelete = await dataSource.manager
+        .getRepository(Comment)
+        .findOneByOrFail({ id: idComment });
+
+      await dataSource.manager.getRepository(Comment).remove(commentToDelete);
+
+      return `Comment deleted`;
     } catch (error) {
       throw new Error("Error: try again with an other user or project");
     }

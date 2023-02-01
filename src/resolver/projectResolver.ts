@@ -3,6 +3,8 @@ import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import Project from "../entity/project";
 import dataSource from "../dataSource";
 import User from "../entity/user";
+import Folder from "../entity/folder";
+import File from "../entity/file";
 
 @Resolver(Project)
 export default class ProjectResolver {
@@ -10,8 +12,22 @@ export default class ProjectResolver {
   async getAllProjects() {
     const response = await dataSource.getRepository(Project).find({
       relations: {
-        likes: true,
-        folders: true,
+        likes: { user: true },
+        folders: { files: true },
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+    return response;
+  }
+
+  @Query(() => [Project])
+  async getSharedProjects() {
+    const response = await dataSource.getRepository(Project).find({
+      where: { public: true },
+      relations: {
+        likes: { user: true },
         comments: true,
         reports: true,
         user: true,
@@ -80,7 +96,27 @@ export default class ProjectResolver {
         id: userId,
       });
       newProject.user = user;
-      await dataSource.manager.save(Project, newProject);
+      const projectInDB = await dataSource.manager.save(Project, newProject);
+
+      const folder = new Folder();
+      folder.project = await dataSource.manager
+        .getRepository(Project)
+        .findOneByOrFail({
+          id: projectInDB.id,
+        });
+      folder.name = "MyProject";
+      const folderInDB = await dataSource.manager.save(Folder, folder);
+
+      const file = new File();
+      file.folder = await dataSource.manager
+        .getRepository(Folder)
+        .findOneByOrFail({
+          id: folderInDB.id,
+        });
+      file.name = "Index";
+      file.extension = "js";
+      file.content = "Console.log('Hello World')";
+      await dataSource.manager.save(File, file);
 
       return `Project created`;
     } catch (error) {
