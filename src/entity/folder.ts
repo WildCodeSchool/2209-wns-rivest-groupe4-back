@@ -20,7 +20,7 @@ export default class Folder {
   @Column()
   name: string;
 
-  @Field(() => [Folder], { nullable: true })
+  @Field(() => Folder, { nullable: true })
   @ManyToOne(() => Folder, (folder) => folder.parentFolder, {
     onDelete: "CASCADE",
   })

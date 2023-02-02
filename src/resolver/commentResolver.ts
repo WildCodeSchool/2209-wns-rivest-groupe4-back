@@ -12,6 +12,15 @@ export default class CommentResolver {
     return await dataSource.getRepository(Comment).find();
   }
 
+  @Query(() => [Comment])
+  async getAllCommentsByProjectId(@Arg("idProject") idProject: number) {
+    const response = await dataSource.getRepository(Comment).find({
+      where: { project: { id: idProject } },
+      relations: { user: true },
+    });
+    return response;
+  }
+
   @Mutation(() => String)
   async addComment(
     @Arg("idUser") idUser: string,

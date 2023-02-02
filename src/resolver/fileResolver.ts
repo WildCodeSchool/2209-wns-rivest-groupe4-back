@@ -75,4 +75,24 @@ export default class FileResolver {
       throw new Error("Error: try again with an other user or project");
     }
   }
+
+  @Mutation(() => String)
+  async deleteFile(@Arg("fileId") fileId: number): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+
+    const fileToRemove = await dataSource.manager
+      .getRepository(File)
+      .findOneByOrFail({
+        id: fileId,
+      });
+
+    try {
+      await dataSource.manager.getRepository(File).remove(fileToRemove);
+      return `File deleted`;
+    } catch (error) {
+      throw new Error("Error: try again with an other user or project");
+    }
+  }
 }

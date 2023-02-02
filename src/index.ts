@@ -51,7 +51,7 @@ const start = async (): Promise<void> => {
       } else {
         try {
           const bearer = req.headers.authorization.split("Bearer ")[1];
-          if (bearer.length > 0) {
+          if (bearer && bearer.length > 0) {
             const user = jwt.verify(bearer, process.env.JWT_SECRET_KEY);
             return user;
           } else {
