@@ -45,9 +45,9 @@ export default class ProjectResolver {
     const response = await dataSource.getRepository(Project).find({
       where: { user },
       relations: {
-        likes: true,
+        likes: { user: true },
         folders: true,
-        comments: true,
+        comments: { user: true },
         reports: true,
         user: true,
       },
@@ -62,9 +62,9 @@ export default class ProjectResolver {
         id,
       },
       relations: {
-        likes: true,
+        likes: { user: true },
         folders: true,
-        comments: true,
+        comments: { user: true },
         reports: true,
         user: true,
       },

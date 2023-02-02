@@ -48,6 +48,7 @@ export default class FolderResolver {
           id: parentFolderId,
         });
     }
+
     try {
       await dataSource.manager.save(Folder, folder);
       return `Folder saved`;
@@ -56,25 +57,38 @@ export default class FolderResolver {
     }
   }
 
-  @Mutation(() => String)
-  async renameFolder(
-    @Arg("name") name: string,
+  @Mutation(() => Folder)
+  async modifyFolder(
     @Arg("folderId") folderId: number,
-  ): Promise<string> {
+    @Arg("name", { nullable: true }) name?: string,
+    @Arg("parentFolderId", { nullable: true }) parentFolderId?: number,
+  ): Promise<Folder> {
     if (process.env.JWT_SECRET_KEY === undefined) {
       throw new Error();
     }
 
-    const folderToRename = await dataSource.manager
+    const folderToModify = await dataSource.manager
       .getRepository(Folder)
       .findOneByOrFail({
         id: folderId,
       });
-    folderToRename.name = name;
+
+    if (name != null) {
+      folderToModify.name = name;
+    }
+
+    if (parentFolderId != null) {
+      folderToModify.parentFolder = await dataSource.manager
+        .getRepository(Folder)
+        .findOneByOrFail({
+          id: parentFolderId,
+        });
+    }
+    console.warn(folderToModify);
 
     try {
-      await dataSource.manager.save(Folder, folderToRename);
-      return `Folder's name modified`;
+      await dataSource.manager.save(Folder, folderToModify);
+      return folderToModify;
     } catch (error) {
       throw new Error("Error: try again with an other user or project");
     }
