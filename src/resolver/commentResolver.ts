@@ -13,7 +13,7 @@ export default class CommentResolver {
   }
 
   @Query(() => [Comment])
-  async getAllFoldersByProjectId(@Arg("idProject") idProject: number) {
+  async getAllCommentsByProjectId(@Arg("idProject") idProject: number) {
     const response = await dataSource.getRepository(Comment).find({
       where: { project: { id: idProject } },
       relations: { user: true },
