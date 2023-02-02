@@ -104,7 +104,7 @@ export default class ProjectResolver {
         .findOneByOrFail({
           id: projectInDB.id,
         });
-      folder.name = "MyProject";
+      folder.name = name;
       const folderInDB = await dataSource.manager.save(Folder, folder);
 
       const file = new File();

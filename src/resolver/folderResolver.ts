@@ -17,7 +17,7 @@ export default class FolderResolver {
   async getAllFoldersByProjectId(@Arg("idProject") idProject: number) {
     const response = await dataSource.getRepository(Folder).find({
       where: { project: { id: idProject } },
-      relations: { files: true },
+      relations: { files: true, parentFolder: true },
     });
     return response;
   }
@@ -26,7 +26,7 @@ export default class FolderResolver {
   async addFolder(
     @Arg("name") name: string,
     @Arg("projectId") projectId: number,
-    @Arg("parentFolderId", { nullable: true }) parentFolderId?: number,
+    @Arg("parentFolderId") parentFolderId: number,
   ): Promise<string> {
     if (process.env.JWT_SECRET_KEY === undefined) {
       throw new Error();
@@ -41,13 +41,11 @@ export default class FolderResolver {
 
     folder.name = name;
 
-    if (parentFolderId != null) {
-      folder.parentFolder = await dataSource.manager
-        .getRepository(Folder)
-        .findOneByOrFail({
-          id: parentFolderId,
-        });
-    }
+    folder.parentFolder = await dataSource.manager
+      .getRepository(Folder)
+      .findOneByOrFail({
+        id: parentFolderId,
+      });
 
     try {
       await dataSource.manager.save(Folder, folder);
