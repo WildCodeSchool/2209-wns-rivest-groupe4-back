@@ -25,7 +25,7 @@ export default class ProjectResolver {
   @Query(() => [Project])
   async getSharedProjects() {
     const response = await dataSource.getRepository(Project).find({
-      where: { public: true },
+      where: { isPublic: true },
       relations: {
         likes: { user: true },
         comments: true,
@@ -34,6 +34,24 @@ export default class ProjectResolver {
       },
     });
     return response;
+  }
+
+  @Query(() => [Project])
+  async getProjectsSupported(@Arg("userId") userId: string) {
+    const user = await dataSource.manager.findOneByOrFail(User, {
+      id: userId,
+    });
+
+    const response = await dataSource.getRepository(Project).find({
+      where: { likes: { user } },
+      relations: {
+        likes: { user: true },
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+    return response.filter((el) => el.user.id !== userId);
   }
 
   @Query(() => [Project])
@@ -89,7 +107,7 @@ export default class ProjectResolver {
       }
 
       const newProject = new Project();
-      newProject.public = isPublic;
+      newProject.isPublic = isPublic;
       newProject.name = name;
       newProject.description = description;
       const user = await dataSource.manager.findOneByOrFail(User, {
@@ -150,7 +168,7 @@ export default class ProjectResolver {
       });
 
     if (isPublic != null) {
-      projectToUpdate.public = isPublic;
+      projectToUpdate.isPublic = isPublic;
     }
     if (name != null) {
       projectToUpdate.name = name;

@@ -14,7 +14,7 @@ export default class UserResolver {
     return await dataSource.manager.find(User);
   }
 
-  @Query(() => [User])
+  @Query(() => User)
   async getOneUser(@Arg("id") id: string): Promise<User> {
     return await dataSource.manager.getRepository(User).findOneByOrFail({
       id,

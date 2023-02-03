@@ -24,7 +24,7 @@ export default class Project {
 
   @Field(() => Boolean)
   @Column()
-  public: boolean;
+  isPublic: boolean;
 
   @Field(() => String)
   @Column({ default: false })
