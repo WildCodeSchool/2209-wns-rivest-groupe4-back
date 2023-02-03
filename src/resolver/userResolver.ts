@@ -48,12 +48,14 @@ export default class UserResolver {
     }
   }
 
-  @Mutation(() => String)
+  @Mutation(() => TokenWithUser)
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Arg("pseudo") pseudo: string,
-  ): Promise<string> {
+  ): Promise<TokenWithUser> {
+    console.log(email);
+
     try {
       if (
         !Validate.email(email) ||
@@ -76,7 +78,7 @@ export default class UserResolver {
         { email: userFromDB.email },
         process.env.JWT_SECRET_KEY,
       );
-      return token;
+      return { token, user: userFromDB };
     } catch (error) {
       throw new Error("Error try again with an other email or pseudo");
     }
