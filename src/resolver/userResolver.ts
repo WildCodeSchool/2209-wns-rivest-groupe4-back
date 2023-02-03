@@ -27,6 +27,7 @@ export default class UserResolver {
     @Arg("password") password: string,
   ): Promise<TokenWithUser> {
     try {
+      email = email.toLowerCase();
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
         email,
       });
@@ -54,8 +55,6 @@ export default class UserResolver {
     @Arg("password") password: string,
     @Arg("pseudo") pseudo: string,
   ): Promise<TokenWithUser> {
-    console.log(email);
-
     try {
       if (
         !Validate.email(email) ||
@@ -67,6 +66,7 @@ export default class UserResolver {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
       }
+      email = email.toLowerCase();
 
       const newUser = new User();
       newUser.email = email;
