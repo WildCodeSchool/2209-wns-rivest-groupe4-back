@@ -113,9 +113,9 @@ export default class ProjectResolver {
         .findOneByOrFail({
           id: folderInDB.id,
         });
-      file.name = "Index";
+      file.name = "index";
       file.extension = "js";
-      file.content = "Console.log('Hello World')";
+      file.content = "console.log('Hello World')";
       await dataSource.manager.save(File, file);
 
       folderInDB.files = [file];

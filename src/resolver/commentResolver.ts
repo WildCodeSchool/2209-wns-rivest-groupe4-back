@@ -54,6 +54,50 @@ export default class CommentResolver {
   }
 
   @Mutation(() => String)
+  async modifyComment(
+    @Arg("id") id: number,
+    @Arg("content") content: string,
+  ): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+
+    const commentToUpdate = await dataSource.manager
+      .getRepository(Comment)
+      .findOneByOrFail({
+        id,
+      });
+
+    commentToUpdate.comment = content;
+
+    try {
+      await dataSource.manager.save(Comment, commentToUpdate);
+      return `Comment modified`;
+    } catch (error) {
+      throw new Error("Error: Project not found");
+    }
+  }
+
+  @Mutation(() => String)
+  async deleteProject(@Arg("id") id: number): Promise<string> {
+    if (process.env.JWT_SECRET_KEY === undefined) {
+      throw new Error();
+    }
+    const projectToDelete = await dataSource.manager
+      .getRepository(Project)
+      .findOneByOrFail({
+        id,
+      });
+
+    try {
+      await dataSource.manager.getRepository(Project).remove(projectToDelete);
+      return `Project deleted`;
+    } catch (error) {
+      throw new Error("Error: Project not found");
+    }
+  }
+
+  @Mutation(() => String)
   async deleteComment(@Arg("idComment") idComment: number): Promise<string> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
