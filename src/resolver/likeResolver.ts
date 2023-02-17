@@ -44,11 +44,20 @@ export default class LikeResolver {
 
     const like = new Like();
 
-    like.project = await dataSource.manager
+    const project = await dataSource.manager
       .getRepository(Project)
-      .findOneByOrFail({
-        id: idProject,
+      .findOneOrFail({
+        where: {
+          id: idProject,
+        },
+        relations: { user: true },
       });
+
+    if (project.user.id !== idUser) {
+      like.project = project;
+    } else {
+      throw new Error("The creator of project can't like his own project");
+    }
 
     like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
       id: idUser,

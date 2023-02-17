@@ -24,6 +24,10 @@ export default class Comment {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Field()
+  @CreateDateColumn()
+  updatedAt: Date;
+
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })
   user: User;
