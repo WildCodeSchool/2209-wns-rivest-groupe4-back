@@ -1,5 +1,5 @@
 import { ApolloServer } from "apollo-server-express";
-import { strict as assert } from "assert";
+import IProps from "./types/IProps";
 
 const typeDefs = `#graphql
   type Query {
@@ -7,13 +7,9 @@ const typeDefs = `#graphql
   }
 `;
 
-interface IProps {
-  name: string;
-}
-
 const resolvers = {
   Query: {
-    hello: (_: string, { name }: IProps) => `Hello ${name}!`,
+    hello: (_: any, { name }: IProps) => `Hello ${name}!`,
   },
 };
 
