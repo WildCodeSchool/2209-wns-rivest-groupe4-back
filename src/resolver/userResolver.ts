@@ -4,7 +4,8 @@ import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import User from "../entity/user";
 import dataSource from "../dataSource";
-import { Validate } from "../utils/regex";
+import Validate from "../utils/regex";
+import TokenWithUser from "../types/tokenWithUser";
 
 @Resolver(User)
 export default class UserResolver {
@@ -13,14 +14,21 @@ export default class UserResolver {
     return await dataSource.manager.find(User);
   }
 
-  @Query(() => String)
-  async getToken(
+  @Query(() => User)
+  async getOneUser(@Arg("id") id: string): Promise<User> {
+    return await dataSource.manager.getRepository(User).findOneByOrFail({
+      id,
+    });
+  }
+
+  @Query(() => TokenWithUser)
+  async getTokenWithUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
-  ): Promise<string> {
+  ): Promise<TokenWithUser> {
     try {
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
-        email,
+        email: email.toLocaleLowerCase(),
       });
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
@@ -31,7 +39,7 @@ export default class UserResolver {
           { email: userFromDB.email },
           process.env.JWT_SECRET_KEY,
         );
-        return token;
+        return { token, user: userFromDB };
       } else {
         throw new Error();
       }
@@ -40,12 +48,12 @@ export default class UserResolver {
     }
   }
 
-  @Mutation(() => String)
+  @Mutation(() => TokenWithUser)
   async createUser(
     @Arg("email") email: string,
     @Arg("password") password: string,
     @Arg("pseudo") pseudo: string,
-  ): Promise<string> {
+  ): Promise<TokenWithUser> {
     try {
       if (
         !Validate.email(email) ||
@@ -59,7 +67,7 @@ export default class UserResolver {
       }
 
       const newUser = new User();
-      newUser.email = email;
+      newUser.email = email.toLowerCase();
       newUser.hashedPassword = await argon2.hash(password);
       newUser.pseudo = pseudo;
       const userFromDB = await dataSource.manager.save(User, newUser);
@@ -68,6 +76,55 @@ export default class UserResolver {
         { email: userFromDB.email },
         process.env.JWT_SECRET_KEY,
       );
+      return { token, user: userFromDB };
+    } catch (error) {
+      throw new Error("Error try again with an other email or pseudo");
+    }
+  }
+
+  @Mutation(() => String)
+  async modifyUser(
+    @Arg("id") id: string,
+    @Arg("email", { nullable: true }) email?: string,
+    @Arg("password", { nullable: true }) password?: string,
+    @Arg("pseudo", { nullable: true }) pseudo?: string,
+  ): Promise<string> {
+    try {
+      if (process.env.JWT_SECRET_KEY === undefined) {
+        throw new Error();
+      }
+
+      const userToUpdate = await dataSource.manager
+        .getRepository(User)
+        .findOneByOrFail({
+          id,
+        });
+
+      if (pseudo != null) {
+        if (!Validate.pseudo(pseudo)) {
+          throw Error("Invalid pseudo");
+        } else {
+          userToUpdate.pseudo = pseudo;
+        }
+      }
+      if (password != null) {
+        if (!Validate.password(password)) {
+          throw Error("Invalid password");
+        } else {
+          userToUpdate.hashedPassword = await argon2.hash(password);
+        }
+      }
+      if (email != null) {
+        if (!Validate.email(email)) {
+          throw Error("Invalid email");
+        } else {
+          userToUpdate.email = email;
+        }
+      }
+
+      const userFromDB = await dataSource.manager.save(User, userToUpdate);
+
+      const token = jwt.sign({ ...userFromDB }, process.env.JWT_SECRET_KEY);
       return token;
     } catch (error) {
       throw new Error("Error try again with an other email or pseudo");

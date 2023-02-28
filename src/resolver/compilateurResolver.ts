@@ -14,12 +14,16 @@ function execShellCommand(cmd: string) {
   });
 }
 
+const decodeBase64 = (data: string) => {
+  return Buffer.from(data, "base64").toString("ascii");
+};
+
 @Resolver()
 export default class CompilateurResolver {
   @Query(() => String)
   async postCode(@Arg("code") code: string): Promise<string> {
     try {
-      fs.writeFile("./src/child-processes/code.js", code);
+      fs.writeFile("./src/child-processes/code.js", decodeBase64(code));
     } catch {
       console.warn("error save file !");
     }
