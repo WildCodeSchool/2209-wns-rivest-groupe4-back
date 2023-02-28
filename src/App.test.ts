@@ -7,9 +7,13 @@ const typeDefs = `#graphql
   }
 `;
 
+interface IProps {
+  name: string;
+}
+
 const resolvers = {
   Query: {
-    hello: (name: string) => `Hello ${name}!`,
+    hello: (_: string, { name }: IProps) => `Hello ${name}!`,
   },
 };
 
