@@ -9,7 +9,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
       - name: Goto client and run tests
-        run: npm i && npm testCI
+        run: npm i && npm run testCI
   docker:
     needs: test-back
     if: github.ref == 'refs/heads/main'
