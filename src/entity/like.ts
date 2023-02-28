@@ -11,10 +11,10 @@ export default class Like {
   id: number;
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.likes)
+  @ManyToOne(() => User, (user) => user.likes, { onDelete: "CASCADE" })
   user: User;
 
   @Field(() => Project)
-  @ManyToOne(() => Project, (project) => project.likes)
+  @ManyToOne(() => Project, (project) => project.likes, { onDelete: "CASCADE" })
   project: Project;
 }

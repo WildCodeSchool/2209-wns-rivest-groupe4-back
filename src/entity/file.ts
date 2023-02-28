@@ -17,15 +17,11 @@ export default class File {
   @Column()
   content: string;
 
-  @Field(() => Boolean)
-  @Column()
-  public: boolean;
-
   @Field(() => String)
   @Column()
   extension: string;
 
   @Field(() => Folder)
-  @ManyToOne(() => Folder, (folder) => folder.files)
+  @ManyToOne(() => Folder, (folder) => folder.files, { onDelete: "CASCADE" })
   folder: Folder;
 }

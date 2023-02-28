@@ -24,7 +24,7 @@ export default class Project {
 
   @Field(() => Boolean)
   @Column()
-  public: boolean;
+  isPublic: boolean;
 
   @Field(() => String)
   @Column({ default: false })
@@ -42,23 +42,23 @@ export default class Project {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Field(() => Folder)
+  @Field(() => [Folder])
   @OneToMany(() => Folder, (folder) => folder.project)
   folders: [Folder];
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.projects)
+  @ManyToOne(() => User, (user) => user.projects, { onDelete: "CASCADE" })
   user: User;
 
-  @Field(() => Like)
+  @Field(() => [Like], { nullable: true })
   @OneToMany(() => Like, (like) => like.project)
-  likes: Like[];
+  likes?: Like[];
 
-  @Field(() => Comment)
+  @Field(() => [Comment])
   @OneToMany(() => Comment, (comment) => comment.project)
   comments: Comment[];
 
-  @Field(() => Report)
+  @Field(() => [Report])
   @OneToMany(() => Report, (report) => report.project)
   reports: Report[];
 }
