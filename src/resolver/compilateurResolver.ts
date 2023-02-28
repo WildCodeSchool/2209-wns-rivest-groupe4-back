@@ -15,8 +15,8 @@ function execShellCommand(cmd: string) {
 }
 
 const decodeBase64 = (data: string) => {
-  return Buffer.from(data, 'base64').toString('ascii');
-}
+  return Buffer.from(data, "base64").toString("ascii");
+};
 
 @Resolver()
 export default class CompilateurResolver {

@@ -14,6 +14,18 @@ export default class LikeResolver {
       .find({ relations: { project: true, user: true } });
   }
 
+  @Query(() => [Like])
+  async getAllLikesByUser(@Arg("userId") userId: string) {
+    const user = await dataSource.manager.findOneByOrFail(User, {
+      id: userId,
+    });
+
+    const response = await dataSource.getRepository(Like).find({
+      where: { user },
+    });
+    return response;
+  }
+
   @Mutation(() => String)
   async addLike(
     @Arg("idUser") idUser: string,
@@ -32,11 +44,20 @@ export default class LikeResolver {
 
     const like = new Like();
 
-    like.project = await dataSource.manager
+    const project = await dataSource.manager
       .getRepository(Project)
-      .findOneByOrFail({
-        id: idProject,
+      .findOneOrFail({
+        where: {
+          id: idProject,
+        },
+        relations: { user: true },
       });
+
+    if (project.user.id !== idUser) {
+      like.project = project;
+    } else {
+      throw new Error("The creator of project can't like his own project");
+    }
 
     like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
       id: idUser,

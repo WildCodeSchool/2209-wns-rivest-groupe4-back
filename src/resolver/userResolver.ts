@@ -14,7 +14,7 @@ export default class UserResolver {
     return await dataSource.manager.find(User);
   }
 
-  @Query(() => [User])
+  @Query(() => User)
   async getOneUser(@Arg("id") id: string): Promise<User> {
     return await dataSource.manager.getRepository(User).findOneByOrFail({
       id,
@@ -27,9 +27,8 @@ export default class UserResolver {
     @Arg("password") password: string,
   ): Promise<TokenWithUser> {
     try {
-      email = email.toLowerCase();
       const userFromDB = await dataSource.manager.findOneByOrFail(User, {
-        email,
+        email: email.toLocaleLowerCase(),
       });
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
@@ -66,10 +65,9 @@ export default class UserResolver {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
       }
-      email = email.toLowerCase();
 
       const newUser = new User();
-      newUser.email = email;
+      newUser.email = email.toLowerCase();
       newUser.hashedPassword = await argon2.hash(password);
       newUser.pseudo = pseudo;
       const userFromDB = await dataSource.manager.save(User, newUser);

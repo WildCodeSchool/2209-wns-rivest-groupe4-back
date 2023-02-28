@@ -21,12 +21,24 @@ export default class CommentResolver {
     return response;
   }
 
-  @Mutation(() => String)
+  @Query(() => [Comment])
+  async getAllCommentsByUser(@Arg("userId") userId: string) {
+    const user = await dataSource.manager.findOneByOrFail(User, {
+      id: userId,
+    });
+
+    const response = await dataSource.getRepository(Comment).find({
+      where: { user },
+    });
+    return response;
+  }
+
+  @Mutation(() => Comment)
   async addComment(
     @Arg("idUser") idUser: string,
     @Arg("comment") comment: string,
     @Arg("idProject") idProject: number,
-  ): Promise<string> {
+  ): Promise<Comment> {
     try {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
@@ -45,9 +57,9 @@ export default class CommentResolver {
         });
       newComment.comment = comment;
 
-      await dataSource.manager.save(Comment, newComment);
+      const commentInBD = await dataSource.manager.save(Comment, newComment);
 
-      return `Comment saved`;
+      return commentInBD;
     } catch (error) {
       throw new Error("Error: try again with an other user or project");
     }
@@ -71,6 +83,7 @@ export default class CommentResolver {
     commentToUpdate.comment = content;
 
     try {
+      commentToUpdate.updatedAt = new Date();
       await dataSource.manager.save(Comment, commentToUpdate);
       return `Comment modified`;
     } catch (error) {
