@@ -1,6 +1,13 @@
 name: jest-ci
 
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - dev
 
 jobs:
   test-back:
