@@ -9,7 +9,7 @@ const typeDefs = `#graphql
 
 const resolvers = {
   Query: {
-    hello: (_: any, { name }: IProps) => `Hello ${name}!`,
+    hello: (_: string, { name }: IProps) => `Hello ${name}!`,
   },
 };
 
