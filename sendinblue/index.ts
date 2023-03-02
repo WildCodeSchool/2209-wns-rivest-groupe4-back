@@ -2,13 +2,13 @@ import express from "express";
 import * as SibApiV3Sdk from "@sendinblue/client";
 import dotenv from "dotenv";
 import cors from "cors";
-// import bodyParser from "body-parser";
+import bodyParser from "body-parser";
 
 const app = express();
 dotenv.config();
 app.use(cors());
 // app.use(bodyParser.json());
-app.use(express.json());
+app.use(bodyParser.json());
 
 app.post("/sendMail", (req, res) => {
   const { name, email, reason } = req.body;
@@ -23,12 +23,7 @@ app.post("/sendMail", (req, res) => {
   sendSmtpEmail.subject = `${name} vous a envoyé un message`;
   sendSmtpEmail.htmlContent = `<html><body><h1>codeless4 : </h1><p>${reason}</p></body></html>`;
   sendSmtpEmail.sender = { name: `${name}`, email: `${email}` };
-  sendSmtpEmail.to = [
-    { email: "quentin.billac2@gmail.com", name: "codeless4" },
-  ];
-  // sendSmtpEmail.cc = [{ email: "example2@example2.com", name: "Janice Doe" }];
-  // sendSmtpEmail.bcc = [{ name: "John Doe", email: "example@example.com" }];
-  // sendSmtpEmail.replyTo = { email: "replyto@domain.com", name: "John Doe" };
+  sendSmtpEmail.to = [{ email: "codeless4@outlook.fr", name: "codeless4" }];
   sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-1234" };
   sendSmtpEmail.params = {
     parameter: "My param value",
