@@ -18,16 +18,15 @@ const execShellCommand = (cmd: string) => {
 
 const fileRouter = express.Router();
 
-
 const decodeBase64 = (data: string) => {
-  return Buffer.from(data, 'base64').toString('ascii');
-}
+  return Buffer.from(data, "base64").toString("ascii");
+};
 
 fileRouter.post("/", async (req: Request, res: Response) => {
   const fileContent: string = req.body.content;
   try {
     fs.outputFile("../files/code.js", decodeBase64(fileContent));
-  } catch (error) { 
+  } catch (error) {
     return res.status(500).send(error);
   }
   try {
