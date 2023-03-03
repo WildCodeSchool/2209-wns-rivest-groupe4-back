@@ -18,11 +18,11 @@ jobs:
           echo "${{ secrets.MAIN_ENV_FILE }}" > .env
       - name: "Create compiler env file"
         run: |
-          cd ./compiler
+          cd ./src/compiler
           echo "${{ secrets.COMPILER_ENV_FILE }}" > .env
       - name: "Create sendinblue env file"
         run: |
-          cd ./sendinblue
+          cd ./src/sendinblue
           echo "${{ secrets.SENDINBLUE_ENV_FILE }}" > .env
       - name: Check out code
         uses: actions/checkout@v3
