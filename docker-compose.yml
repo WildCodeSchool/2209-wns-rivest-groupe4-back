@@ -60,3 +60,10 @@ services:
     depends_on:
       "backend":
         condition: service_healthy
+  sendinblue:
+    build: ./sendinblue
+    ports:
+      - 5005:5005
+    depends_on:
+      "backend":
+        condition: service_healthy
