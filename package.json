@@ -10,7 +10,7 @@
     "posttest": "npm run db:test:down",
     "test-watch": "npm run db:test:up && jest --watchAll",
     "start": "nodemon -L --exec ts-node-dev src/index.ts",
-    "lint": "echo '----- Checking Backend...' && prettier --debug-check . && eslint --ext .ts . && echo '----- Done!'",
+    "lint": "npm run test --wait && echo '----- Checking Backend...' && prettier --debug-check . && eslint --ext .ts . && echo '----- Done!'",
     "fix": "prettier --write . && eslint --fix --ext ts. ",
     "prepare": "husky install"
   },
