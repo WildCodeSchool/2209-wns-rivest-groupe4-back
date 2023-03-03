@@ -1,9 +1,9 @@
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
-import Like from "../entity/like";
+import Like from "../entities/like";
 import dataSource from "../dataSource";
-import Project from "../entity/project";
-import User from "../entity/user";
+import Project from "../entities/project";
+import User from "../entities/user";
 
 @Resolver(Like)
 export default class LikeResolver {

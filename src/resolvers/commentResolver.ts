@@ -1,9 +1,9 @@
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import dataSource from "../dataSource";
-import Project from "../entity/project";
-import User from "../entity/user";
-import Comment from "../entity/comment";
+import Project from "../entities/project";
+import User from "../entities/user";
+import Comment from "../entities/comment";
 
 @Resolver(Comment)
 export default class CommentResolver {

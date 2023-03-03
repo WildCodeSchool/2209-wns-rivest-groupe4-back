@@ -27,8 +27,8 @@ services:
       - db
   backend:
     build: .
-    environment:
-      - PORT=7008
+    env_file:
+      - ./.env
     volumes:
       - ./src:/app/src
     ports:

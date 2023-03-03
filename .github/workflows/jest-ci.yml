@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Goto client and run tests
-        run: npm i && npm run testCI
+      - name: Goto server and run tests
+        run: npm i && npm run test
   docker:
     needs: test-back
     if: github.ref == 'refs/heads/main'
@@ -35,5 +35,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          context: "{{defaultContext}}:client"
-          tags: lucarriza/codeless4-backend:latest
+          context: "{{defaultContext}}"
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend:latest

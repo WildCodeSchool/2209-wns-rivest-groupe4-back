@@ -1,10 +1,10 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
 
-import Project from "../entity/project";
+import Project from "../entities/project";
 import dataSource from "../dataSource";
-import User from "../entity/user";
-import Folder from "../entity/folder";
-import File from "../entity/file";
+import User from "../entities/user";
+import Folder from "../entities/folder";
+import File from "../entities/file";
 
 @Resolver(Project)
 export default class ProjectResolver {
@@ -73,6 +73,7 @@ export default class ProjectResolver {
     return response;
   }
 
+  @Authorized()
   @Query(() => Project)
   async getOneProject(@Arg("id") id: number): Promise<Project> {
     const project = await dataSource.manager.getRepository(Project).findOne({
@@ -94,27 +95,52 @@ export default class ProjectResolver {
     }
   }
 
+  @Authorized()
   @Mutation(() => Project)
   async createProject(
-    @Arg("public") isPublic: boolean,
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+    @Arg("isPublic") isPublic: boolean,
     @Arg("name") name: string,
     @Arg("description") description: string,
-    @Arg("userId") userId: string,
   ): Promise<Project> {
-    try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
+    const {
+      userFromToken: { userId },
+    } = context;
 
-      const newProject = new Project();
-      newProject.isPublic = isPublic;
-      newProject.name = name;
-      newProject.description = description;
-      const user = await dataSource.manager.findOneByOrFail(User, {
+    let user;
+    try {
+      user = await dataSource.manager.findOneByOrFail(User, {
         id: userId,
       });
-      newProject.user = user;
-      const projectInDB = await dataSource.manager.save(Project, newProject);
+    } catch {
+      throw new Error("No user matches with this id");
+    }
+
+    if (name === "") {
+      throw new Error("No empty project name");
+    }
+    if (description === "") {
+      throw new Error("No empty project description");
+    }
+
+    const projectWithSameName = await dataSource.manager.findOneBy(Project, {
+      user,
+      name,
+    });
+
+    if (projectWithSameName != null) {
+      throw new Error("Project with same user and same name already exists");
+    }
+
+    const newProject = new Project();
+    newProject.isPublic = isPublic;
+    newProject.name = name;
+    newProject.description = description;
+    newProject.user = user;
+
+    let projectInDB;
+    try {
+      projectInDB = await dataSource.manager.save(Project, newProject);
 
       const folder = new Folder();
       folder.project = await dataSource.manager
@@ -123,6 +149,7 @@ export default class ProjectResolver {
           id: projectInDB.id,
         });
       folder.name = name;
+
       const folderInDB = await dataSource.manager.save(Folder, folder);
 
       const file = new File();
@@ -134,44 +161,69 @@ export default class ProjectResolver {
       file.name = "index";
       file.extension = "js";
       file.content = "console.log('Hello World')";
+
       await dataSource.manager.save(File, file);
 
       folderInDB.files = [file];
       projectInDB.folders = [folderInDB];
-
-      return projectInDB;
-    } catch (error) {
-      throw new Error("Error: try again with an other body");
+    } catch {
+      throw new Error("Error while saving new project");
     }
+    return projectInDB;
   }
 
-  @Mutation(() => String)
+  @Authorized()
+  @Mutation(() => Project)
   async modifyProject(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("id") id: number,
     @Arg("name", { nullable: true }) name?: string,
     @Arg("description", { nullable: true }) description?: string,
-    @Arg("public", { nullable: true }) isPublic?: boolean,
-  ): Promise<string> {
-    if (process.env.JWT_SECRET_KEY === undefined) {
-      throw new Error();
-    }
+    @Arg("isPublic", { nullable: true }) isPublic?: boolean,
+  ): Promise<Project> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
     if (name == null && isPublic == null && description == null) {
       throw new Error(
         `No change, specify argument to change for the project ${id.toString()}`,
       );
     }
+    if (name === "") {
+      throw new Error("No empty project name");
+    }
+    if (description === "") {
+      throw new Error("No empty project description");
+    }
 
-    const projectToUpdate = await dataSource.manager
-      .getRepository(Project)
-      .findOneByOrFail({
+    const projectToUpdate = await dataSource.getRepository(Project).findOne({
+      where: {
         id,
-      });
+      },
+      relations: {
+        likes: true,
+        folders: { files: true },
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+
+    if (projectToUpdate == null) {
+      throw new Error(`No project found with id: ${id.toString()}`);
+    }
+
+    if (projectToUpdate.user.id !== userId) {
+      throw new Error("This user isn't the owner of the project");
+    }
 
     if (isPublic != null) {
       projectToUpdate.isPublic = isPublic;
     }
     if (name != null) {
       projectToUpdate.name = name;
+      projectToUpdate.folders[0].name = name;
     }
     if (description != null) {
       projectToUpdate.description = description;
@@ -180,28 +232,42 @@ export default class ProjectResolver {
     try {
       projectToUpdate.updatedAt = new Date();
       await dataSource.manager.save(Project, projectToUpdate);
-      return `Project modified`;
+      return projectToUpdate;
     } catch (error) {
-      throw new Error("Error: Project not found");
+      throw new Error("Error while saving modifications of projects");
     }
   }
 
+  @Authorized()
   @Mutation(() => String)
-  async deleteProject(@Arg("id") id: number): Promise<string> {
-    if (process.env.JWT_SECRET_KEY === undefined) {
-      throw new Error();
+  async deleteProject(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+    @Arg("id") id: number,
+  ): Promise<string> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    let projectToDelete;
+    try {
+      projectToDelete = await dataSource.manager
+        .getRepository(Project)
+        .findOneByOrFail({
+          id,
+        });
+    } catch {
+      throw new Error(`No project found with id: ${id.toString()}`);
     }
-    const projectToDelete = await dataSource.manager
-      .getRepository(Project)
-      .findOneByOrFail({
-        id,
-      });
+
+    if (projectToDelete.user.id !== userId) {
+      throw new Error("This user isn't the owner of the project");
+    }
 
     try {
       await dataSource.manager.getRepository(Project).remove(projectToDelete);
       return `Project deleted`;
     } catch (error) {
-      throw new Error("Error: Project not found");
+      throw new Error("Error while deleting project");
     }
   }
 }

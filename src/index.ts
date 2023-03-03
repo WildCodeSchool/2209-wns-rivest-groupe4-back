@@ -6,18 +6,18 @@ import jwt from "jsonwebtoken";
 import { buildSchema } from "type-graphql";
 import * as dotenv from "dotenv";
 import dataSource from "./dataSource";
-import UserResolver from "./resolver/userResolver";
-import ProjectResolver from "./resolver/projectResolver";
-import CompilateurResolver from "./resolver/compilateurResolver";
-import LikeResolver from "./resolver/likeResolver";
-import FileResolver from "./resolver/fileResolver";
-import FolderResolver from "./resolver/folderResolver";
-import ReportResolver from "./resolver/reportResolver";
-import CommentResolver from "./resolver/commentResolver";
+import UserResolver from "./resolvers/userResolver";
+import ProjectResolver from "./resolvers/projectResolver";
+import CompilateurResolver from "./resolvers/compilateurResolver";
+import LikeResolver from "./resolvers/likeResolver";
+import FileResolver from "./resolvers/fileResolver";
+import FolderResolver from "./resolvers/folderResolver";
+import ReportResolver from "./resolvers/reportResolver";
+import CommentResolver from "./resolvers/commentResolver";
 
 dotenv.config();
 
-const port = process.env.GITHUB_AUTH_TOKEN ?? 5001;
+const port = process.env.PORT ?? 5001;
 const start = async (): Promise<void> => {
   await dataSource.initialize();
   const schema = await buildSchema({
@@ -31,12 +31,10 @@ const start = async (): Promise<void> => {
       ReportResolver,
       CommentResolver,
     ],
-    authChecker: ({ context }, roles) => {
-      if (context.email === undefined) {
-        return false;
-      } else {
-        return true;
-      }
+    authChecker: ({ context }) => {
+      const { userFromToken: { email } = { email: null } } = context;
+      if (email === null) return false;
+      else return true;
     },
   });
 
@@ -50,10 +48,13 @@ const start = async (): Promise<void> => {
         return {};
       } else {
         try {
-          const bearer = req.headers.authorization.split("Bearer ")[1];
-          if (bearer && bearer.length > 0) {
-            const user = jwt.verify(bearer, process.env.JWT_SECRET_KEY);
-            return user;
+          const bearer = req.headers.authorization;
+          if (bearer.length > 0) {
+            const userFromToken = jwt.verify(
+              bearer,
+              process.env.JWT_SECRET_KEY,
+            );
+            return { userFromToken };
           } else {
             return {};
           }

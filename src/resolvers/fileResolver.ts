@@ -1,8 +1,8 @@
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import dataSource from "../dataSource";
-import File from "../entity/file";
-import Folder from "../entity/folder";
+import File from "../entities/file";
+import Folder from "../entities/folder";
 
 @Resolver(File)
 export default class FileResolver {

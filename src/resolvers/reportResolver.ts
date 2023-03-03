@@ -1,16 +1,14 @@
 import { Arg, Mutation, Query, Resolver } from "type-graphql";
 
 import dataSource from "../dataSource";
-import Project from "../entity/project";
-import User from "../entity/user";
-import Report from "../entity/report";
+import Project from "../entities/project";
+import User from "../entities/user";
+import Report from "../entities/report";
 
 @Resolver(Report)
 export default class ReportResolver {
   @Query(() => [Report])
   async getAllReports() {
-    const response = await dataSource.getRepository(Report).find();
-    console.warn(response);
     return await dataSource.getRepository(Report).find();
   }
 
@@ -24,7 +22,6 @@ export default class ReportResolver {
       if (process.env.JWT_SECRET_KEY === undefined) {
         throw new Error();
       }
-
       const report = new Report();
       report.project = await dataSource.manager
         .getRepository(Project)
