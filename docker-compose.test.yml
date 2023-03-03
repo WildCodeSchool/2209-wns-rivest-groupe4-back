@@ -1,0 +1,34 @@
+version: "2.1"
+services:
+  db-test:
+    image: postgres
+    restart: always
+    ports:
+      - "5003:5432"
+    environment:
+      POSTGRES_DB: "postgres"
+      PGUSER: "postgres"
+      POSTGRES_PASSWORD: example
+      PGDATA: /var/lib/postgresql/data/PGDATA
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  
+  backend-test:
+    build: .
+    env_file:
+      - ./.env.test
+    volumes:
+      - ./src:/app/src
+    ports:
+      - 5001:5001
+    healthcheck:
+      test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:5001'' --data ''{"query":"query { __typename }"}'' || exit 1'
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      "db-test":
+        condition: service_healthy

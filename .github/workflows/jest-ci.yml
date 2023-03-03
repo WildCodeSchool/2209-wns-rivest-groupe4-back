@@ -15,15 +15,8 @@ jobs:
     steps:
       - name: "Create main env file"
         run: |
-          echo "${{ secrets.MAIN_ENV_FILE }}" > .env
-      - name: "Create compiler env file"
-        working-directory: ./app/compiler
-        run: |
-          echo "${{ secrets.COMPILER_ENV_FILE }}" > .env
-      - name: "Create sendinblue env file"
-        working-directory: ./app/sendinblue
-        run: |
-          echo "${{ secrets.SENDINBLUE_ENV_FILE }}" > .env
+          touch .env.test
+          echo "${{ secrets.MAIN_ENV_FILE }}" > .env.test
       - name: Check out code
         uses: actions/checkout@v3
       - name: Goto server and run tests

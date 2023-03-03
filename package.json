@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "db:test:up": "docker compose -f docker-compose.yml up --build -d --wait",
-    "db:test:down": "docker compose -f docker-compose.yml down",
+    "db:test:up": "docker compose -f docker-compose.test.yml up --build -d --wait",
+    "db:test:down": "docker compose -f docker-compose.test.yml down",
     "test": "npm run db:test:up && jest",
     "posttest": "npm run db:test:down",
     "test-watch": "npm run db:test:up && jest --watchAll",
