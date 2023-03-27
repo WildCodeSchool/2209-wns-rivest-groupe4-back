@@ -9,9 +9,10 @@ import Report from "./entities/report";
 import User from "./entities/user";
 
 dotenv.config();
+const dbHost = process.env.DB_NAME === "db-test" ? "db-test" : "db";
 const dataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_NAME,
+  host: dbHost,
   port: 5432,
   username: "postgres",
   password: "example",

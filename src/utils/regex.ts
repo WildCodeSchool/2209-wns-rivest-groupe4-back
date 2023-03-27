@@ -31,7 +31,16 @@ export default class Validate {
 
   static pseudo(pseudo: string): boolean {
     this.regex = new RegExp(/^[a-zA-Z0-9]+$/);
-
     return this.regex.test(pseudo);
+  }
+
+  static fileName(fileName: string): boolean {
+    this.regex = new RegExp(/^[a-zA-Z0-9]+$/);
+    return this.regex.test(fileName);
+  }
+
+  static extension(extension: string): boolean {
+    this.regex = new RegExp(/^[a-z]+$/);
+    return this.regex.test(extension);
   }
 }

@@ -4,12 +4,12 @@ services:
     image: postgres
     restart: always
     ports:
-      - "5003:5432"
+      - "5432:5432"
     environment:
       POSTGRES_DB: "postgres"
       PGUSER: "postgres"
+      PGPORT: 5432
       POSTGRES_PASSWORD: example
-      PGDATA: /var/lib/postgresql/data/PGDATA
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
@@ -23,9 +23,9 @@ services:
     volumes:
       - ./src:/app/src
     ports:
-      - 5001:5001
+      - 5002:5002
     healthcheck:
-      test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:5001'' --data ''{"query":"query { __typename }"}'' || exit 1'
+      test: 'curl --fail --request POST --header ''content-type: application/json'' --url ''http://localhost:5002'' --data ''{"query":"query { __typename }"}'' || exit 1'
       interval: 5s
       timeout: 5s
       retries: 10

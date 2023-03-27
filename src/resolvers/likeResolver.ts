@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
 
 import Like from "../entities/like";
 import dataSource from "../dataSource";
@@ -14,8 +14,15 @@ export default class LikeResolver {
       .find({ relations: { project: true, user: true } });
   }
 
+  @Authorized()
   @Query(() => [Like])
-  async getAllLikesByUser(@Arg("userId") userId: string) {
+  async getAllLikesByUser(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+  ) {
+    const {
+      userFromToken: { userId },
+    } = context;
+
     const user = await dataSource.manager.findOneByOrFail(User, {
       id: userId,
     });
@@ -26,70 +33,84 @@ export default class LikeResolver {
     return response;
   }
 
+  @Authorized()
   @Mutation(() => String)
   async addLike(
-    @Arg("idUser") idUser: string,
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("idProject") idProject: number,
   ): Promise<string> {
-    if (process.env.JWT_SECRET_KEY === undefined) {
-      throw new Error();
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const projectToLike = await dataSource.getRepository(Project).findOne({
+      where: { id: idProject },
+      relations: { user: true },
+    });
+
+    if (projectToLike === null) {
+      throw new Error("No project found with this idProject");
     }
+
+    if (projectToLike.user.id === userId) {
+      throw new Error("The owner of the project cannot like himself");
+    }
+
     const likeFromDB = await dataSource.manager
       .getRepository(Like)
-      .find({ where: { user: { id: idUser }, project: { id: idProject } } });
+      .find({ where: { user: { id: userId }, project: { id: idProject } } });
 
     if (likeFromDB.length > 0) {
       throw new Error("Like already existing with this user on this project");
     }
 
     const like = new Like();
-
-    const project = await dataSource.manager
-      .getRepository(Project)
-      .findOneOrFail({
-        where: {
-          id: idProject,
-        },
-        relations: { user: true },
-      });
-
-    if (project.user.id !== idUser) {
-      like.project = project;
-    } else {
-      throw new Error("The creator of project can't like his own project");
-    }
-
+    like.project = projectToLike;
     like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
-      id: idUser,
+      id: userId,
     });
 
     try {
       await dataSource.manager.save(Like, like);
       return `Like saved`;
-    } catch (error) {
-      throw new Error("Error: try again with an other user or project");
+    } catch {
+      throw new Error("Error while saving like on this project");
     }
   }
 
+  @Authorized()
   @Mutation(() => String)
   async deleteLike(
-    @Arg("idUser") idUser: string,
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("idProject") idProject: number,
   ): Promise<string> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const projectToDeleteLike = await dataSource
+      .getRepository(Project)
+      .findOne({
+        where: { id: idProject },
+      });
+
+    if (projectToDeleteLike === null) {
+      throw new Error("No project found with this idProject");
+    }
+
+    const like = await dataSource.manager
+      .getRepository(Like)
+      .find({ where: { user: { id: userId }, project: { id: idProject } } });
+
+    if (like.length === 0) {
+      throw new Error("No like to delete with this user on this project");
+    }
+
     try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
-
-      const like = await dataSource.manager
-        .getRepository(Like)
-        .find({ where: { user: { id: idUser }, project: { id: idProject } } });
-
       await dataSource.manager.getRepository(Like).remove(like);
-
       return `Like deleted`;
-    } catch (error) {
-      throw new Error("Error: try again with an other user or project");
+    } catch {
+      throw new Error("Error while deleting like on this project");
     }
   }
 }

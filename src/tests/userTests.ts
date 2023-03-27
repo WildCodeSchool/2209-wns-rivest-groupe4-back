@@ -2,6 +2,7 @@ import client from "./tools/clientUtil";
 import clearAllEntities from "./tools/setupDB";
 import {
   CREATE_USER,
+  DELETE_USER,
   GET_ALL_USERS,
   GET_ONE_USER,
   GET_TOKEN,
@@ -334,12 +335,11 @@ const userTests = () => {
           password: testUserData.password,
         },
       });
-      const token = tokenRes.data?.getTokenWithUser.token;
       const res = await client.query({
         query: GET_ALL_USERS,
         context: {
           headers: {
-            authorization: token,
+            authorization: tokenRes.data?.getTokenWithUser.token,
           },
         },
       });
@@ -357,16 +357,24 @@ const userTests = () => {
       );
     });
 
-    // it("deletes a user", async () => {
-    //   const res = await client.query({
-    //     query: GET_ALL_USERS,
-    //   });
-    //   const errorMessage = res.errors?.[0]?.message;
-    //   expect(res.errors).toHaveLength(1);
-    //   expect(errorMessage).toBe(
-    //     "Access denied! You need to be authorized to perform this action!",
-    //   );
-    // });
+    it("deletes a user", async () => {
+      const tokenRes = await client.mutate({
+        mutation: GET_TOKEN,
+        variables: {
+          email: testUserData.email,
+          password: testUserData.password,
+        },
+      });
+      const res = await client.mutate({
+        mutation: DELETE_USER,
+        context: {
+          headers: {
+            authorization: tokenRes.data?.getTokenWithUser.token,
+          },
+        },
+      });
+      expect(res.data?.deleteUser).toBe("User deleted");
+    });
   });
 };
 

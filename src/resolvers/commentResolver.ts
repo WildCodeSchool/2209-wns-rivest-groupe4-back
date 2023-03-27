@@ -1,4 +1,4 @@
-import { Arg, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
 
 import dataSource from "../dataSource";
 import Project from "../entities/project";
@@ -12,17 +12,28 @@ export default class CommentResolver {
     return await dataSource.getRepository(Comment).find();
   }
 
+  @Authorized()
   @Query(() => [Comment])
   async getAllCommentsByProjectId(@Arg("idProject") idProject: number) {
     const response = await dataSource.getRepository(Comment).find({
       where: { project: { id: idProject } },
       relations: { user: true },
     });
+    if (response.length === 0) {
+      throw new Error("No project found with this idProject");
+    }
     return response;
   }
 
+  @Authorized()
   @Query(() => [Comment])
-  async getAllCommentsByUser(@Arg("userId") userId: string) {
+  async getAllCommentsByUser(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+  ) {
+    const {
+      userFromToken: { userId },
+    } = context;
+
     const user = await dataSource.manager.findOneByOrFail(User, {
       id: userId,
     });
@@ -33,99 +44,117 @@ export default class CommentResolver {
     return response;
   }
 
+  @Authorized()
   @Mutation(() => Comment)
   async addComment(
-    @Arg("idUser") idUser: string,
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("comment") comment: string,
     @Arg("idProject") idProject: number,
   ): Promise<Comment> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const projectToComment = await dataSource.getRepository(Project).findOne({
+      where: { id: idProject },
+      relations: { user: true },
+    });
+
+    if (comment === "") {
+      throw new Error("No empty comment");
+    }
+
+    if (projectToComment === null) {
+      throw new Error("No project found with this idProject");
+    }
+
+    const newComment = new Comment();
+    newComment.project = projectToComment;
+    newComment.user = await dataSource.manager
+      .getRepository(User)
+      .findOneByOrFail({
+        id: userId,
+      });
+    newComment.comment = comment;
+
     try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
-
-      const newComment = new Comment();
-      newComment.project = await dataSource.manager
-        .getRepository(Project)
-        .findOneByOrFail({
-          id: idProject,
-        });
-      newComment.user = await dataSource.manager
-        .getRepository(User)
-        .findOneByOrFail({
-          id: idUser,
-        });
-      newComment.comment = comment;
-
       const commentInBD = await dataSource.manager.save(Comment, newComment);
-
       return commentInBD;
-    } catch (error) {
-      throw new Error("Error: try again with an other user or project");
+    } catch {
+      throw new Error("Error while saving comment");
     }
   }
 
-  @Mutation(() => String)
+  @Authorized()
+  @Mutation(() => Comment)
   async modifyComment(
-    @Arg("id") id: number,
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+    @Arg("idComment") idComment: number,
     @Arg("content") content: string,
-  ): Promise<string> {
-    if (process.env.JWT_SECRET_KEY === undefined) {
-      throw new Error();
+  ): Promise<Comment> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const commentToUpdate = await dataSource.getRepository(Comment).findOne({
+      where: { id: idComment },
+      relations: { user: true, project: true },
+    });
+
+    if (content === "") {
+      throw new Error("No empty content");
     }
 
-    const commentToUpdate = await dataSource.manager
-      .getRepository(Comment)
-      .findOneByOrFail({
-        id,
-      });
+    if (commentToUpdate === null) {
+      throw new Error("No comment found with this id");
+    }
+
+    if (commentToUpdate.user.id !== userId) {
+      throw new Error("This user isn't the owner of the comment");
+    }
 
     commentToUpdate.comment = content;
 
     try {
       commentToUpdate.updatedAt = new Date();
-      await dataSource.manager.save(Comment, commentToUpdate);
-      return `Comment modified`;
-    } catch (error) {
-      throw new Error("Error: Project not found");
+      const commentSaved = await dataSource.manager.save(
+        Comment,
+        commentToUpdate,
+      );
+      return commentSaved;
+    } catch {
+      throw new Error("Error while modifying the comment");
     }
   }
 
+  @Authorized()
   @Mutation(() => String)
-  async deleteProject(@Arg("id") id: number): Promise<string> {
-    if (process.env.JWT_SECRET_KEY === undefined) {
-      throw new Error();
+  async deleteComment(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+    @Arg("idComment") idComment: number,
+  ): Promise<string> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const commentToDelete = await dataSource.getRepository(Comment).findOne({
+      where: { id: idComment },
+      relations: { user: true },
+    });
+
+    if (commentToDelete === null) {
+      throw new Error("No comment found with this id");
     }
-    const projectToDelete = await dataSource.manager
-      .getRepository(Project)
-      .findOneByOrFail({
-        id,
-      });
+
+    if (commentToDelete.user.id !== userId) {
+      throw new Error("This user isn't the owner of the comment");
+    }
 
     try {
-      await dataSource.manager.getRepository(Project).remove(projectToDelete);
-      return `Project deleted`;
-    } catch (error) {
-      throw new Error("Error: Project not found");
-    }
-  }
-
-  @Mutation(() => String)
-  async deleteComment(@Arg("idComment") idComment: number): Promise<string> {
-    try {
-      if (process.env.JWT_SECRET_KEY === undefined) {
-        throw new Error();
-      }
-
-      const commentToDelete = await dataSource.manager
-        .getRepository(Comment)
-        .findOneByOrFail({ id: idComment });
-
       await dataSource.manager.getRepository(Comment).remove(commentToDelete);
-
-      return `Comment deleted`;
-    } catch (error) {
-      throw new Error("Error: try again with an other user or project");
+      return "Comment deleted";
+    } catch {
+      throw new Error("Error while deleting comment");
     }
   }
 }

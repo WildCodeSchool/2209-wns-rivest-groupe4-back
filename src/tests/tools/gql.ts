@@ -55,6 +55,12 @@ export const GET_ALL_USERS = gql`
   }
 `;
 
+export const DELETE_USER = gql`
+  mutation Mutation {
+    deleteUser
+  }
+`;
+
 // Project Queries
 export const CREATE_PROJECT = gql`
   mutation Mutation(
@@ -68,6 +74,7 @@ export const CREATE_PROJECT = gql`
       name
       description
       folders {
+        id
         name
         files {
           content
@@ -131,5 +138,228 @@ export const GET_ONE_PROJECT = gql`
       name
       description
     }
+  }
+`;
+
+export const DELETE_PROJECT = gql`
+  mutation Mutation($deleteProjectId: Float!) {
+    deleteProject(id: $deleteProjectId)
+  }
+`;
+
+// Like Queries
+export const ADD_LIKE = gql`
+  mutation AddLike($idProject: Float!) {
+    addLike(idProject: $idProject)
+  }
+`;
+
+export const DELETE_LIKE = gql`
+  mutation AddLike($idProject: Float!) {
+    deleteLike(idProject: $idProject)
+  }
+`;
+
+export const GET_ALL_LIKES_BY_USER = gql`
+  query Query {
+    getAllLikesByUser {
+      id
+    }
+  }
+`;
+
+// Comment Queries
+
+export const ADD_COMMENT = gql`
+  mutation Mutation($idProject: Float!, $comment: String!) {
+    addComment(idProject: $idProject, comment: $comment) {
+      id
+      comment
+      createdAt
+      updatedAt
+      user {
+        pseudo
+        email
+      }
+      project {
+        id
+      }
+    }
+  }
+`;
+
+export const MODIFY_COMMENT = gql`
+  mutation Mutation($content: String!, $idComment: Float!) {
+    modifyComment(content: $content, idComment: $idComment) {
+      id
+      comment
+      createdAt
+      updatedAt
+      user {
+        pseudo
+        email
+      }
+      project {
+        id
+      }
+    }
+  }
+`;
+
+export const DELETE_COMMENT = gql`
+  mutation Mutation($idComment: Float!) {
+    deleteComment(idComment: $idComment)
+  }
+`;
+
+export const GET_ALL_COMMENTS_BY_PROJECT = gql`
+  query GetAllCommentsByProjectId($idProject: Float!) {
+    getAllCommentsByProjectId(idProject: $idProject) {
+      comment
+    }
+  }
+`;
+
+export const GET_ALL_COMMENTS_BY_USER = gql`
+  query GetAllCommentsByUser {
+    getAllCommentsByUser {
+      comment
+    }
+  }
+`;
+
+// Report Queries
+
+export const ADD_REPORT = gql`
+  mutation AddReport($idProject: Float!, $content: String!) {
+    addReport(idProject: $idProject, content: $content) {
+      id
+      content
+      createdAt
+      user {
+        pseudo
+        email
+      }
+      project {
+        id
+      }
+    }
+  }
+`;
+
+export const GET_ALL_REPORTS = gql`
+  query Query {
+    getAllReports {
+      id
+    }
+  }
+`;
+
+// Folder Queries
+
+export const ADD_FOLDER = gql`
+  mutation Mutation($parentFolderId: Float!, $name: String!) {
+    addFolder(parentFolderId: $parentFolderId, name: $name) {
+      id
+      name
+      parentFolder {
+        id
+      }
+    }
+  }
+`;
+
+export const RENAME_FOLDER = gql`
+  mutation RenameFolder($folderId: Float!, $name: String) {
+    renameFolder(folderId: $folderId, name: $name) {
+      id
+      name
+    }
+  }
+`;
+
+export const GET_ALL_FOLDERS_BY_PROJECT = gql`
+  query Query($idProject: Float!) {
+    getAllFoldersByProjectId(idProject: $idProject) {
+      id
+    }
+  }
+`;
+
+export const DELETE_FOLDER = gql`
+  mutation Mutation($folderId: Float!) {
+    deleteFolder(folderId: $folderId)
+  }
+`;
+
+// File Queries
+
+export const ADD_FILE = gql`
+  mutation Mutation(
+    $folderId: Float!
+    $extension: String!
+    $content: String!
+    $name: String!
+  ) {
+    addFile(
+      folderId: $folderId
+      extension: $extension
+      content: $content
+      name: $name
+    ) {
+      content
+      extension
+      id
+      name
+      folder {
+        id
+      }
+    }
+  }
+`;
+
+export const MODIFY_FILE = gql`
+  mutation Mutation(
+    $idFile: Float!
+    $extension: String
+    $content: String
+    $name: String
+  ) {
+    modifyFile(
+      idFile: $idFile
+      extension: $extension
+      content: $content
+      name: $name
+    ) {
+      content
+      extension
+      id
+      name
+      folder {
+        id
+      }
+    }
+  }
+`;
+
+export const GET_ALL_FILES_BY_FOLDER = gql`
+  query GetAllFilesByFolderId($folderId: Float!) {
+    getAllFilesByFolderId(folderId: $folderId) {
+      id
+    }
+  }
+`;
+
+export const GET_ALL_FILES_BY_PROJECT = gql`
+  query GetAllFilesByFolderId($projectId: Float!) {
+    getAllFilesByProjectId(projectId: $projectId) {
+      id
+    }
+  }
+`;
+
+export const DELETE_FILE = gql`
+  mutation Mutation($fileId: Float!) {
+    deleteFile(fileId: $fileId)
   }
 `;

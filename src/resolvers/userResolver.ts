@@ -172,27 +172,22 @@ export default class UserResolver {
 
   @Authorized()
   @Mutation(() => String)
-  async deleteProject(
+  async deleteUser(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
   ): Promise<string> {
     const {
       userFromToken: { userId },
     } = context;
-    let userToDelete;
-    try {
-      userToDelete = await dataSource.manager
-        .getRepository(User)
-        .findOneByOrFail({
-          id: userId,
-        });
-    } catch (error) {
-      throw new Error(`No user found with id : ${userId}`);
-    }
+    const userToDelete = await dataSource.manager
+      .getRepository(User)
+      .findOneByOrFail({
+        id: userId,
+      });
     try {
       await dataSource.manager.getRepository(User).remove(userToDelete);
-      return `Project deleted`;
+      return `User deleted`;
     } catch (error) {
-      throw new Error("Error while deleting project");
+      throw new Error("Error while deleting user");
     }
   }
 }

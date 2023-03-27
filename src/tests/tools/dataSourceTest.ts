@@ -10,7 +10,7 @@ import User from "../../entities/user";
 const dataSourceTest = new DataSource({
   type: "postgres",
   host: "localhost",
-  port: 5003,
+  port: 5432,
   username: "postgres",
   password: "example",
   database: "postgres",

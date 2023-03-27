@@ -40,4 +40,6 @@ jobs:
         with:
           push: true
           context: "{{defaultContext}}"
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend:${{ github.sha }}

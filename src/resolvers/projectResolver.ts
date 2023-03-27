@@ -36,6 +36,7 @@ export default class ProjectResolver {
     return response;
   }
 
+  @Authorized()
   @Query(() => [Project])
   async getProjectsSupported(@Arg("userId") userId: string) {
     const user = await dataSource.manager.findOneByOrFail(User, {
@@ -51,9 +52,10 @@ export default class ProjectResolver {
         user: true,
       },
     });
-    return response.filter((el) => el.user.id !== userId);
+    return response;
   }
 
+  @Authorized()
   @Query(() => [Project])
   async getProjectsByUserId(@Arg("userId") userId: string) {
     const user = await dataSource.manager.findOneByOrFail(User, {
@@ -107,14 +109,9 @@ export default class ProjectResolver {
       userFromToken: { userId },
     } = context;
 
-    let user;
-    try {
-      user = await dataSource.manager.findOneByOrFail(User, {
-        id: userId,
-      });
-    } catch {
-      throw new Error("No user matches with this id");
-    }
+    const user = await dataSource.manager.findOneByOrFail(User, {
+      id: userId,
+    });
 
     if (name === "") {
       throw new Error("No empty project name");
@@ -248,14 +245,20 @@ export default class ProjectResolver {
       userFromToken: { userId },
     } = context;
 
-    let projectToDelete;
-    try {
-      projectToDelete = await dataSource.manager
-        .getRepository(Project)
-        .findOneByOrFail({
-          id,
-        });
-    } catch {
+    const projectToDelete = await dataSource.getRepository(Project).findOne({
+      where: {
+        id,
+      },
+      relations: {
+        likes: true,
+        folders: { files: true },
+        comments: true,
+        reports: true,
+        user: true,
+      },
+    });
+
+    if (projectToDelete === null) {
       throw new Error(`No project found with id: ${id.toString()}`);
     }
 
@@ -265,7 +268,7 @@ export default class ProjectResolver {
 
     try {
       await dataSource.manager.getRepository(Project).remove(projectToDelete);
-      return `Project deleted`;
+      return "Project deleted";
     } catch (error) {
       throw new Error("Error while deleting project");
     }
