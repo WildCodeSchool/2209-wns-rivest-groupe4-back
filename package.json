@@ -12,7 +12,9 @@
     "start": "nodemon -L --exec ts-node-dev src/index.ts",
     "lint": "npm run test --wait && echo '----- Checking Backend...' && prettier --debug-check . && eslint --ext .ts . && echo '----- Done!'",
     "fix": "prettier --write . && eslint --fix --ext ts. ",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "tsc",
+    "prod": "node build/src/index.js"
   },
   "author": "",
   "license": "ISC",
