@@ -18,7 +18,7 @@ export default class Report {
 
   @Field(() => String)
   @Column()
-  comment: string;
+  content: string;
 
   @Field()
   @CreateDateColumn()

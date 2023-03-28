@@ -9,7 +9,6 @@ RUN npm i -g node-pre-gyp
 
 WORKDIR /app
 
-COPY .env .env
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 
