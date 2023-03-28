@@ -4,11 +4,12 @@ services:
     image: postgres
     restart: always
     ports:
-      - "5002:5432"
+      - "5432:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: "postgres"
+      PGPORT: 5432
       PGUSER: "postgres"
       POSTGRES_PASSWORD: example
       PGDATA: /var/lib/postgresql/data/PGDATA
@@ -27,8 +28,8 @@ services:
       - db
   backend:
     build: .
-    environment:
-      - PORT=7008
+    env_file:
+      - ./.env
     volumes:
       - ./src:/app/src
     ports:
@@ -57,6 +58,13 @@ services:
     build: ./compiler
     ports:
       - 7008:7008
+    depends_on:
+      "backend":
+        condition: service_healthy
+  sendinblue:
+    build: ./sendinblue
+    ports:
+      - 5005:5005
     depends_on:
       "backend":
         condition: service_healthy
