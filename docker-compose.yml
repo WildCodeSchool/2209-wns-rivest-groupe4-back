@@ -8,7 +8,7 @@ services:
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${DATASOURCE_USERNAME}
+      POSTGRES_DB: "postgres"
       PGPORT: ${DB_PORT}
       PGUSER: ${DATASOURCE_USERNAME}
       POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
