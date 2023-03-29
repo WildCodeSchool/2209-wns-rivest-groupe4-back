@@ -1,4 +1,4 @@
-import { DataSource, DataSourceOptions } from "typeorm";
+import { DataSource } from "typeorm";
 import * as dotenv from "dotenv";
 import Comment from "./entities/comment";
 import File from "./entities/file";
