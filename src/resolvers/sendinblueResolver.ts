@@ -27,16 +27,22 @@ export default class SendinBlueResolver {
       subject: "New Subject",
     };
 
+    let status;
     let response;
 
     await apiInstance
       .sendTransacEmail(sendSmtpEmail)
       .then((data) => {
-        response = JSON.stringify(data);
+        status = data.response.statusCode;
       })
       .catch((error) => {
-        response = error;
+        console.warn(error);
       });
+    if (status === 201) {
+      response = "Mail sent successfully";
+    } else {
+      response = "Something went wrong";
+    }
     return `${response}`;
   }
 }
