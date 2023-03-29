@@ -14,6 +14,7 @@ import FileResolver from "./resolvers/fileResolver";
 import FolderResolver from "./resolvers/folderResolver";
 import ReportResolver from "./resolvers/reportResolver";
 import CommentResolver from "./resolvers/commentResolver";
+import SendinBlueResolver from "./resolvers/sendinblueResolver";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ const start = async (): Promise<void> => {
       FolderResolver,
       ReportResolver,
       CommentResolver,
+      SendinBlueResolver,
     ],
     authChecker: ({ context }) => {
       const { userFromToken: { email } = { email: null } } = context;
