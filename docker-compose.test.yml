@@ -6,7 +6,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.test
+      - ./.env.test
     environment:
       POSTGRES_DB: ${DATASOURCE_USERNAME}
       PGPORT: ${DB_PORT}
@@ -21,7 +21,7 @@ services:
   backend-test:
     build: .
     env_file:
-      - .env.test
+      - ./.env.test
     volumes:
       - ./src:/app/src
     ports:
