@@ -8,10 +8,10 @@ services:
     env_file:
       - ./.env.test
     environment:
-      POSTGRES_DB: ${DATASOURCE_USERNAME}
-      PGPORT: ${DB_PORT}
-      PGUSER: ${DATASOURCE_USERNAME}
-      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
+      POSTGRES_DB: "postgres"
+      PGPORT: 5432
+      PGUSER: "postgres"
+      POSTGRES_PASSWORD: "example"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
