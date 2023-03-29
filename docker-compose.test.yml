@@ -5,11 +5,13 @@ services:
     restart: always
     ports:
       - "5432:5432"
+    env_file:
+      - .env.test
     environment:
-      POSTGRES_DB: "postgres"
-      PGUSER: "postgres"
-      PG_PORT: 5432
-      POSTGRES_PASSWORD: example
+      POSTGRES_DB: ${DATASOURCE_USERNAME}
+      PGPORT: ${DB_PORT}
+      PGUSER: ${DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
