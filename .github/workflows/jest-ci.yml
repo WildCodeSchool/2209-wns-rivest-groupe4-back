@@ -13,10 +13,10 @@ jobs:
   test-back:
     runs-on: ubuntu-latest
     steps:
-      - name: "Create main env file"
+      - name: "Create test env file"
         run: |
           touch .env.test
-          echo "${{ secrets.MAIN_ENV_FILE }}" > .env.test
+          echo "${{ secrets.TEST_ENV_FILE }}" > .env.test
       - name: Check out code
         uses: actions/checkout@v3
       - name: Goto server and run tests
