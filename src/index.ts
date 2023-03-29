@@ -17,7 +17,7 @@ import CommentResolver from "./resolvers/commentResolver";
 
 dotenv.config();
 
-const port = process.env.PORT ?? 5001;
+const port = process.env.SERVER_PORT ?? 5001;
 const start = async (): Promise<void> => {
   await dataSource.initialize();
   const schema = await buildSchema({
@@ -48,7 +48,11 @@ const start = async (): Promise<void> => {
         return {};
       } else {
         try {
-          const bearer = req.headers.authorization;
+          let bearer = req.headers.authorization;
+          if (bearer.includes("Bearer")) {
+            const [string, token] = bearer.split("Bearer ");
+            bearer = token;
+          }
           if (bearer.length > 0) {
             const userFromToken = jwt.verify(
               bearer,

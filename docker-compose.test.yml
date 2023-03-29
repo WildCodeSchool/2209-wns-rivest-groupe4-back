@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: "postgres"
       PGUSER: "postgres"
-      PGPORT: 5432
+      PG_PORT: 5432
       POSTGRES_PASSWORD: example
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
