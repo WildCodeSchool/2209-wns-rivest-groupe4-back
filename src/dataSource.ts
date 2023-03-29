@@ -9,13 +9,13 @@ import Report from "./entities/report";
 import User from "./entities/user";
 
 dotenv.config();
-const dbHost = process.env.DB_NAME === "db-test" ? "db-test" : "db";
+const dbHost = process.env.DATASOURCE_NAME === "db-test" ? "db-test" : "db";
 const dataSource = new DataSource({
   type: "postgres",
   host: dbHost,
   port: 5432,
-  username: "postgres",
-  password: "example",
+  username: process.env.DATASOURCE_USERNAME,
+  password: process.env.DATASOURCE_PASSWORD,
   database: "postgres",
   synchronize: true,
   entities: [User, Project, Folder, File, Like, Comment, Report],
