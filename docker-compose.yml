@@ -9,9 +9,9 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: "postgres"
-      PGPORT: 5432
-      PGUSER: "postgres"
-      POSTGRES_PASSWORD: example
+      PGPORT: ${DB_PORT}
+      PGUSER: ${DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
       PGDATA: /var/lib/postgresql/data/PGDATA
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
@@ -55,7 +55,9 @@ services:
       "backend":
         condition: service_healthy
   compiler:
-    build: ./compiler
+    build: ../codeless4-compiler
+    env_file:
+      - ../codeless4-compiler/.env
     ports:
       - 7008:7008
     depends_on:
