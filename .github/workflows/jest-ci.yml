@@ -44,7 +44,7 @@ jobs:
           push: true
           context: "{{defaultContext}}"
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend-staging:staging
+            ${{ secrets.DOCKERHUB_USERNAME }}/codeless4-backend-staging:latest
 
   deploy-production:
     needs: test-back
