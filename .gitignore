@@ -3,3 +3,4 @@ postgres-data
 .env
 src/child-processes
 dist
+.idea
