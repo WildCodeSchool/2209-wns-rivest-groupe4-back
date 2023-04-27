@@ -28,6 +28,26 @@ export default class UserResolver {
     }
   }
 
+  @Authorized()
+  @Query(() => User)
+  async getLoggedUser(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+  ): Promise<User> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const user = await dataSource.manager.getRepository(User).findOneByOrFail({
+      id: userId,
+    });
+
+    if (user != null) {
+      return user;
+    } else {
+      throw new Error("User not found...");
+    }
+  }
+
   @Query(() => TokenWithUser)
   async getTokenWithUser(
     @Arg("email") email: string,

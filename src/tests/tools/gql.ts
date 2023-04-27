@@ -45,6 +45,18 @@ export const GET_ONE_USER = gql`
   }
 `;
 
+export const GET_LOGGED_USER = gql`
+  query GetLoggedUser {
+    getLoggedUser {
+      id
+      email
+      pseudo
+      premium
+      dailyRuns
+    }
+  }
+`;
+
 export const GET_ALL_USERS = gql`
   query getAllUsers {
     getAllUsers {

@@ -4,6 +4,7 @@ import {
   CREATE_USER,
   DELETE_USER,
   GET_ALL_USERS,
+  GET_LOGGED_USER,
   GET_ONE_USER,
   GET_TOKEN,
   MODIFY_USER,
@@ -125,6 +126,27 @@ const userTests = () => {
         },
       });
       expect(res.data?.getTokenWithUser.token).toMatch(jwtRegex);
+    });
+
+    it("Get logged user", async () => {
+      const tokenUserToGet = await client.mutate({
+        mutation: GET_TOKEN,
+        variables: {
+          email: testUserData.email,
+          password: testUserData.password,
+        },
+      });
+
+      const res = await client.query({
+        query: GET_LOGGED_USER,
+        context: {
+          headers: {
+            authorization: tokenUserToGet.data?.getTokenWithUser.token,
+          },
+        },
+      });
+      expect(res.data?.getLoggedUser.email).toBe(testUserData.email);
+      expect(res.data?.getLoggedUser.pseudo).toBe(testUserData.pseudo);
     });
 
     it("fails to get a token with wrong password", async () => {

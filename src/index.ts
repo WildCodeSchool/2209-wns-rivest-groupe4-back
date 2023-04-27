@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import "reflect-metadata";
 import { ApolloServer } from "apollo-server";
+import { InMemoryLRUCache } from "@apollo/utils.keyvaluecache";
 import jwt from "jsonwebtoken";
 
 import { buildSchema } from "type-graphql";
@@ -41,6 +42,7 @@ const start = async (): Promise<void> => {
   });
 
   const server = new ApolloServer({
+    cache: new InMemoryLRUCache(),
     schema,
     context: ({ req }) => {
       if (
