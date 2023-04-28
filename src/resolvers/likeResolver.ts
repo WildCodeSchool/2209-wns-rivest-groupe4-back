@@ -34,6 +34,23 @@ export default class LikeResolver {
   }
 
   @Authorized()
+  @Query(() => Boolean)
+  async projectIsLiked(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+    @Arg("idProject") idProject: number,
+  ) {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const likeFromDB = await dataSource.manager
+      .getRepository(Like)
+      .find({ where: { user: { id: userId }, project: { id: idProject } } });
+
+    return likeFromDB.length !== 0;
+  }
+
+  @Authorized()
   @Mutation(() => String)
   async addLike(
     @Ctx() context: { userFromToken: { userId: string; email: string } },

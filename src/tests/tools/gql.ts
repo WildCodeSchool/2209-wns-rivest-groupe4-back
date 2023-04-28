@@ -180,6 +180,12 @@ export const GET_ALL_LIKES_BY_USER = gql`
   }
 `;
 
+export const PROJECT_IS_LIKED = gql`
+  query Query($idProject: Float!) {
+    projectIsLiked(idProject: $idProject)
+  }
+`;
+
 // Comment Queries
 
 export const ADD_COMMENT = gql`
