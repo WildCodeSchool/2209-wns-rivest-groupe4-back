@@ -110,6 +110,8 @@ export default class FileResolver {
     file.extension = extension;
     if (content != null) {
       file.content = content;
+    } else {
+      file.content = "";
     }
 
     try {
