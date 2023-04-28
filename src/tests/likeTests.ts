@@ -7,6 +7,7 @@ import {
   ADD_LIKE,
   DELETE_LIKE,
   GET_ALL_LIKES_BY_USER,
+  PROJECT_IS_LIKED,
 } from "./tools/gql";
 import { testUserData, testUserData2 } from "./data/users";
 import { testProjectData } from "./data/projects";
@@ -80,6 +81,28 @@ const likeTests = () => {
         },
       });
       expect(res.data?.addLike).toBe("Like saved");
+    });
+
+    it("returns false when the project isn't liked", async () => {
+      const tokenOwner = await client.mutate({
+        mutation: GET_TOKEN,
+        variables: {
+          email: testUserData.email,
+          password: testUserData.password,
+        },
+      });
+      const res = await client.mutate({
+        mutation: PROJECT_IS_LIKED,
+        context: {
+          headers: {
+            authorization: tokenOwner.data?.getTokenWithUser.token,
+          },
+        },
+        variables: {
+          idProject: parseInt(projectId, 10),
+        },
+      });
+      expect(res.data?.projectIsLiked).toBeFalsy();
     });
 
     it("fails to add a like without token", async () => {
@@ -167,6 +190,42 @@ const likeTests = () => {
       expect(res.errors).toHaveLength(1);
       expect(errorMessage).toBe(
         "Like already existing with this user on this project",
+      );
+    });
+
+    it("returns true when the project is liked", async () => {
+      const tokenLiker = await client.mutate({
+        mutation: GET_TOKEN,
+        variables: {
+          email: testUserData2.email,
+          password: testUserData2.password,
+        },
+      });
+      const res = await client.mutate({
+        mutation: PROJECT_IS_LIKED,
+        context: {
+          headers: {
+            authorization: tokenLiker.data?.getTokenWithUser.token,
+          },
+        },
+        variables: {
+          idProject: parseInt(projectId, 10),
+        },
+      });
+      expect(res.data?.projectIsLiked).toBeTruthy();
+    });
+
+    it("throws an error if we check a project is liked without token", async () => {
+      const res = await client.mutate({
+        mutation: PROJECT_IS_LIKED,
+        variables: {
+          idProject: parseInt(projectId, 10),
+        },
+      });
+      const errorMessage = res.errors?.[0]?.message;
+      expect(res.errors).toHaveLength(1);
+      expect(errorMessage).toBe(
+        "Access denied! You need to be authorized to perform this action!",
       );
     });
 
