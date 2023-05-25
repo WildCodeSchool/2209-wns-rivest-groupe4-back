@@ -80,7 +80,15 @@ const likeTests = () => {
           idProject: parseInt(projectId, 10),
         },
       });
-      expect(res.data?.addLike).toBe("Like saved");
+      expect(res.data?.addLike).toMatchObject({
+        id: expect.any(String),
+        project: {
+          id: projectId,
+        },
+        user: {
+          id: tokenLiker.data?.getTokenWithUser.user.id,
+        },
+      });
     });
 
     it("returns false when the project isn't liked", async () => {

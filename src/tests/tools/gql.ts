@@ -162,7 +162,15 @@ export const DELETE_PROJECT = gql`
 // Like Queries
 export const ADD_LIKE = gql`
   mutation AddLike($idProject: Float!) {
-    addLike(idProject: $idProject)
+    addLike(idProject: $idProject) {
+      id
+      project {
+        id
+      }
+      user {
+        id
+      }
+    }
   }
 `;
 
