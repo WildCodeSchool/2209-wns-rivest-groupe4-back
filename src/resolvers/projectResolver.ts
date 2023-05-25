@@ -40,7 +40,7 @@ export default class ProjectResolver {
           likes: {
             user: true,
           },
-          comments: true,
+          comments: { user: true },
           reports: true,
           user: true,
         },

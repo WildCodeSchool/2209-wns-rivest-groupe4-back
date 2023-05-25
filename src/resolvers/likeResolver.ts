@@ -51,11 +51,11 @@ export default class LikeResolver {
   }
 
   @Authorized()
-  @Mutation(() => String)
+  @Mutation(() => Like)
   async addLike(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("idProject") idProject: number,
-  ): Promise<string> {
+  ): Promise<Like> {
     const {
       userFromToken: { userId },
     } = context;
@@ -88,8 +88,11 @@ export default class LikeResolver {
     });
 
     try {
-      await dataSource.manager.save(Like, like);
-      return `Like saved`;
+      const likeSaved = await dataSource.manager.save(Like, like);
+      return await dataSource.manager.getRepository(Like).findOneOrFail({
+        where: { id: likeSaved.id },
+        relations: { project: { likes: true }, user: true },
+      });
     } catch {
       throw new Error("Error while saving like on this project");
     }
