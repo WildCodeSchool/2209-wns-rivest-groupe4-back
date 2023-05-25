@@ -30,45 +30,35 @@ export default class ProjectResolver {
     orderBy: "createdAt" | "likes" | "comments",
     @Arg("order", { nullable: true, defaultValue: "ASC" })
     order: "ASC" | "DESC",
-    @Arg("search", { nullable: true }) search?: string,
-    @Arg("language", { nullable: true }) language?: string,
+    @Arg("query", { nullable: true }) query?: string,
   ) {
-    if (orderBy === "createdAt") {
-      return await dataSource.getRepository(Project).find({
-        where: { isPublic: true },
-        relations: {
-          likes: {
-            user: true,
-          },
-          comments: { user: true },
-          reports: true,
-          user: true,
+    return await dataSource
+      .getRepository(Project)
+      .createQueryBuilder("project")
+      .leftJoinAndSelect("project.likes", "likes")
+      .leftJoinAndSelect("likes.user", "likeUser")
+      .leftJoinAndSelect("project.comments", "comments")
+      .leftJoinAndSelect("comments.user", "commentUser")
+      .leftJoinAndSelect("project.reports", "reports")
+      .leftJoinAndSelect("project.user", "user")
+      .addSelect(
+        orderBy !== "createdAt" ? `COUNT(${orderBy}.id)` : "COUNT(likes.id)",
+        "count",
+      )
+      .where("project.isPublic = :isPublic", { isPublic: true })
+      .andWhere(
+        query ? "user.pseudo LIKE :query OR project.name LIKE :query" : "1=1",
+        {
+          query: `%${query}%`,
         },
-        order: {
-          [orderBy]: order,
-        },
-        skip: offset,
-        take: limit,
-      });
-    } else {
-      return await dataSource
-        .getRepository(Project)
-        .createQueryBuilder("project")
-        .leftJoinAndSelect("project.likes", "likes")
-        .leftJoinAndSelect("likes.user", "likeUser")
-        .leftJoinAndSelect("project.comments", "comments")
-        .leftJoinAndSelect("project.reports", "reports")
-        .leftJoinAndSelect("project.user", "user")
-        .addSelect(`COUNT(${orderBy}.id)`, "count")
-        .where("project.isPublic = :isPublic", { isPublic: true })
-        .groupBy(
-          "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id",
-        )
-        .orderBy("count", order)
-        .skip(offset)
-        .take(limit)
-        .getMany();
-    }
+      )
+      .groupBy(
+        "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id, commentUser.id",
+      )
+      .orderBy(orderBy === "createdAt" ? "project.createdAt" : "count", order)
+      .skip(offset)
+      .take(limit)
+      .getMany();
   }
 
   @Authorized()
