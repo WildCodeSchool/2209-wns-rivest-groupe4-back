@@ -30,45 +30,35 @@ export default class ProjectResolver {
     orderBy: "createdAt" | "likes" | "comments",
     @Arg("order", { nullable: true, defaultValue: "ASC" })
     order: "ASC" | "DESC",
-    @Arg("search", { nullable: true }) search?: string,
-    @Arg("language", { nullable: true }) language?: string,
+    @Arg("userSearch", { nullable: true }) userSearch?: string,
+    @Arg("projectName", { nullable: true }) projectName?: string,
   ) {
-    if (orderBy === "createdAt") {
-      return await dataSource.getRepository(Project).find({
-        where: { isPublic: true },
-        relations: {
-          likes: {
-            user: true,
-          },
-          comments: true,
-          reports: true,
-          user: true,
-        },
-        order: {
-          [orderBy]: order,
-        },
-        skip: offset,
-        take: limit,
-      });
-    } else {
-      return await dataSource
-        .getRepository(Project)
-        .createQueryBuilder("project")
-        .leftJoinAndSelect("project.likes", "likes")
-        .leftJoinAndSelect("likes.user", "likeUser")
-        .leftJoinAndSelect("project.comments", "comments")
-        .leftJoinAndSelect("project.reports", "reports")
-        .leftJoinAndSelect("project.user", "user")
-        .addSelect(`COUNT(${orderBy}.id)`, "count")
-        .where("project.isPublic = :isPublic", { isPublic: true })
-        .groupBy(
-          "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id",
-        )
-        .orderBy("count", order)
-        .skip(offset)
-        .take(limit)
-        .getMany();
-    }
+    return await dataSource
+      .getRepository(Project)
+      .createQueryBuilder("project")
+      .leftJoinAndSelect("project.likes", "likes")
+      .leftJoinAndSelect("likes.user", "likeUser")
+      .leftJoinAndSelect("project.comments", "comments")
+      .leftJoinAndSelect("project.reports", "reports")
+      .leftJoinAndSelect("project.user", "user")
+      .addSelect(
+        orderBy !== "createdAt" ? `COUNT(${orderBy}.id)` : "COUNT(likes.id)",
+        "count",
+      )
+      .where("project.isPublic = :isPublic", { isPublic: true })
+      .andWhere(userSearch ? "user.pseudo = :pseudo" : "1=1", {
+        pseudo: userSearch,
+      })
+      .andWhere(projectName ? "project.name = :name" : "1=1", {
+        name: projectName,
+      })
+      .groupBy(
+        "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id",
+      )
+      .orderBy(orderBy === "createdAt" ? "project.createdAt" : "count", order)
+      .skip(offset)
+      .take(limit)
+      .getMany();
   }
 
   @Authorized()
