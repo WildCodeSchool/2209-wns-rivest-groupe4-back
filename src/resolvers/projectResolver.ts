@@ -30,8 +30,7 @@ export default class ProjectResolver {
     orderBy: "createdAt" | "likes" | "comments",
     @Arg("order", { nullable: true, defaultValue: "ASC" })
     order: "ASC" | "DESC",
-    @Arg("userSearch", { nullable: true }) userSearch?: string,
-    @Arg("projectName", { nullable: true }) projectName?: string,
+    @Arg("query", { nullable: true }) query?: string,
   ) {
     return await dataSource
       .getRepository(Project)
@@ -39,6 +38,7 @@ export default class ProjectResolver {
       .leftJoinAndSelect("project.likes", "likes")
       .leftJoinAndSelect("likes.user", "likeUser")
       .leftJoinAndSelect("project.comments", "comments")
+      .leftJoinAndSelect("comments.user", "commentUser")
       .leftJoinAndSelect("project.reports", "reports")
       .leftJoinAndSelect("project.user", "user")
       .addSelect(
@@ -46,14 +46,14 @@ export default class ProjectResolver {
         "count",
       )
       .where("project.isPublic = :isPublic", { isPublic: true })
-      .andWhere(userSearch ? "user.pseudo = :pseudo" : "1=1", {
-        pseudo: userSearch,
-      })
-      .andWhere(projectName ? "project.name = :name" : "1=1", {
-        name: projectName,
-      })
+      .andWhere(
+        query ? "user.pseudo LIKE :query OR project.name LIKE :query" : "1=1",
+        {
+          query: `%${query}%`,
+        },
+      )
       .groupBy(
-        "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id",
+        "project.id, likes.id, comments.id, reports.id, user.id, likeUser.id, commentUser.id",
       )
       .orderBy(orderBy === "createdAt" ? "project.createdAt" : "count", order)
       .skip(offset)

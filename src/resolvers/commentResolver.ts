@@ -9,7 +9,9 @@ import Comment from "../entities/comment";
 export default class CommentResolver {
   @Query(() => [Comment])
   async getAllComments() {
-    return await dataSource.getRepository(Comment).find();
+    return await dataSource
+      .getRepository(Comment)
+      .find({ relations: { project: true } });
   }
 
   @Authorized()
@@ -79,7 +81,10 @@ export default class CommentResolver {
 
     try {
       const commentInBD = await dataSource.manager.save(Comment, newComment);
-      return commentInBD;
+      return await dataSource.getRepository(Comment).findOneOrFail({
+        where: { id: commentInBD.id },
+        relations: { project: { comments: true }, user: true },
+      });
     } catch {
       throw new Error("Error while saving comment");
     }
@@ -121,7 +126,10 @@ export default class CommentResolver {
         Comment,
         commentToUpdate,
       );
-      return commentSaved;
+      return await dataSource.getRepository(Comment).findOneOrFail({
+        where: { id: commentSaved.id },
+        relations: { project: { comments: true }, user: true },
+      });
     } catch {
       throw new Error("Error while modifying the comment");
     }
