@@ -42,7 +42,16 @@ export default class UserResolver {
     });
 
     if (user != null) {
-      return user.dailyRuns;
+      if (
+        user.dayOfRun.getTime() !==
+        new Date(new Date().setHours(0, 0, 0, 0)).getTime()
+      ) {
+        user.dailyRuns = 0;
+        await dataSource.manager.save(User, user);
+        return user.dailyRuns;
+      } else {
+        return user.dailyRuns;
+      }
     } else {
       throw new Error("User not found...");
     }
