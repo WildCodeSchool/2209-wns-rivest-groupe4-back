@@ -29,6 +29,26 @@ export default class UserResolver {
   }
 
   @Authorized()
+  @Query(() => Number)
+  async getDailyRunsUser(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+  ): Promise<number> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    const user = await dataSource.manager.getRepository(User).findOneByOrFail({
+      id: userId,
+    });
+
+    if (user != null) {
+      return user.dailyRuns;
+    } else {
+      throw new Error("User not found...");
+    }
+  }
+
+  @Authorized()
   @Query(() => User)
   async getLoggedUser(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
@@ -188,6 +208,45 @@ export default class UserResolver {
       );
       return { token, user: userFromDB };
     }
+  }
+
+  @Authorized()
+  @Mutation(() => User)
+  async addRun(
+    @Ctx() context: { userFromToken: { userId: string; email: string } },
+  ): Promise<User> {
+    const {
+      userFromToken: { userId },
+    } = context;
+
+    let userToUpdate;
+    try {
+      userToUpdate = await dataSource.manager
+        .getRepository(User)
+        .findOneByOrFail({
+          id: userId,
+        });
+    } catch {
+      throw new Error("User not found...");
+    }
+
+    if (
+      new Date().getTime() - new Date(userToUpdate.dayOfRun).getTime() >
+      1000 * 60 * 60 * 24
+    ) {
+      userToUpdate.dayOfRun = new Date(new Date().setHours(0, 0, 0, 0));
+      userToUpdate.dailyRuns += 1;
+    } else {
+      userToUpdate.dailyRuns += 1;
+    }
+
+    let userFromDB;
+    try {
+      userFromDB = await dataSource.manager.save(User, userToUpdate);
+    } catch {
+      throw new Error("Error while managing run on this user");
+    }
+    return userFromDB;
   }
 
   @Authorized()

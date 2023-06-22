@@ -72,7 +72,7 @@ export default class ProjectResolver {
       where: { likes: { user } },
       relations: {
         likes: { user: true },
-        comments: true,
+        comments: { user: true },
         reports: true,
         user: true,
       },
@@ -137,6 +137,17 @@ export default class ProjectResolver {
     const user = await dataSource.manager.findOneByOrFail(User, {
       id: userId,
     });
+
+    if (!user.premium) {
+      const projects = await dataSource.manager.find(Project, {
+        where: {
+          user,
+        },
+      });
+      if (projects.length >= 3) {
+        throw new Error("You can't create more than 3 projects");
+      }
+    }
 
     if (name === "") {
       throw new Error("No empty project name");

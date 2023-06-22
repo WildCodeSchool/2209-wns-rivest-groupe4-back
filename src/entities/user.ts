@@ -32,6 +32,10 @@ export default class User {
   @Column({ default: 0 })
   dailyRuns: number;
 
+  @Field(() => Int)
+  @Column({ default: new Date(new Date().setHours(0, 0, 0, 0)) })
+  dayOfRun: Date;
+
   @Field(() => [Project])
   @OneToMany(() => Project, (project) => project.user)
   projects: Project[];

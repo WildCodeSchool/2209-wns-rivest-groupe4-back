@@ -180,9 +180,9 @@ export const DELETE_LIKE = gql`
   }
 `;
 
-export const GET_ALL_LIKES_BY_USER = gql`
+export const GET_MONTHLY_LIKES_BY_USER = gql`
   query Query {
-    getAllLikesByUser {
+    getMonthlyLikesByUser {
       id
     }
   }
@@ -246,9 +246,9 @@ export const GET_ALL_COMMENTS_BY_PROJECT = gql`
   }
 `;
 
-export const GET_ALL_COMMENTS_BY_USER = gql`
-  query GetAllCommentsByUser {
-    getAllCommentsByUser {
+export const GET_MONTHLY_COMMENTS_BY_USER = gql`
+  query GetMonthlyCommentsByUser {
+    getMonthlyCommentsByUser {
       comment
     }
   }
