@@ -6,7 +6,7 @@ import {
   GET_TOKEN,
   ADD_COMMENT,
   GET_ALL_COMMENTS_BY_PROJECT,
-  GET_ALL_COMMENTS_BY_USER,
+  GET_MONTHLY_COMMENTS_BY_USER,
   MODIFY_COMMENT,
   DELETE_COMMENT,
 } from "./tools/gql";
@@ -297,19 +297,21 @@ const commentTests = () => {
         },
       });
       const res = await client.query({
-        query: GET_ALL_COMMENTS_BY_USER,
+        query: GET_MONTHLY_COMMENTS_BY_USER,
         context: {
           headers: {
             authorization: tokenCommentator.data?.getTokenWithUser.token,
           },
         },
       });
-      expect(res.data?.getAllCommentsByUser.length).toBeGreaterThanOrEqual(1);
+      expect(res.data?.getMonthlyCommentsByUser.length).toBeGreaterThanOrEqual(
+        1,
+      );
     });
 
     it("fails to get all comments for a user without token", async () => {
       const res = await client.query({
-        query: GET_ALL_COMMENTS_BY_USER,
+        query: GET_MONTHLY_COMMENTS_BY_USER,
       });
       const errorMessage = res.errors?.[0]?.message;
       expect(res.errors).toHaveLength(1);

@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
-
+import { MoreThan } from "typeorm";
 import dataSource from "../dataSource";
 import Project from "../entities/project";
 import User from "../entities/user";
@@ -29,7 +29,7 @@ export default class CommentResolver {
 
   @Authorized()
   @Query(() => [Comment])
-  async getAllCommentsByUser(
+  async getMonthlyCommentsByUser(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
   ) {
     const {
@@ -41,7 +41,12 @@ export default class CommentResolver {
     });
 
     const response = await dataSource.getRepository(Comment).find({
-      where: { user },
+      where: {
+        user,
+        createdAt: MoreThan(
+          new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+        ),
+      },
     });
     return response;
   }
@@ -83,7 +88,7 @@ export default class CommentResolver {
       const commentInBD = await dataSource.manager.save(Comment, newComment);
       return await dataSource.getRepository(Comment).findOneOrFail({
         where: { id: commentInBD.id },
-        relations: { project: { comments: true }, user: true },
+        relations: { project: { comments: { user: true } }, user: true },
       });
     } catch {
       throw new Error("Error while saving comment");
