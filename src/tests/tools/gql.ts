@@ -162,7 +162,15 @@ export const DELETE_PROJECT = gql`
 // Like Queries
 export const ADD_LIKE = gql`
   mutation AddLike($idProject: Float!) {
-    addLike(idProject: $idProject)
+    addLike(idProject: $idProject) {
+      id
+      project {
+        id
+      }
+      user {
+        id
+      }
+    }
   }
 `;
 
@@ -172,9 +180,9 @@ export const DELETE_LIKE = gql`
   }
 `;
 
-export const GET_ALL_LIKES_BY_USER = gql`
+export const GET_MONTHLY_LIKES_BY_USER = gql`
   query Query {
-    getAllLikesByUser {
+    getMonthlyLikesByUser {
       id
     }
   }
@@ -238,9 +246,9 @@ export const GET_ALL_COMMENTS_BY_PROJECT = gql`
   }
 `;
 
-export const GET_ALL_COMMENTS_BY_USER = gql`
-  query GetAllCommentsByUser {
-    getAllCommentsByUser {
+export const GET_MONTHLY_COMMENTS_BY_USER = gql`
+  query GetMonthlyCommentsByUser {
+    getMonthlyCommentsByUser {
       comment
     }
   }

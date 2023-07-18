@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
-
+import { MoreThan } from "typeorm";
 import Like from "../entities/like";
 import dataSource from "../dataSource";
 import Project from "../entities/project";
@@ -16,7 +16,7 @@ export default class LikeResolver {
 
   @Authorized()
   @Query(() => [Like])
-  async getAllLikesByUser(
+  async getMonthlyLikesByUser(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
   ) {
     const {
@@ -28,7 +28,10 @@ export default class LikeResolver {
     });
 
     const response = await dataSource.getRepository(Like).find({
-      where: { user },
+      where: {
+        user,
+        date: MoreThan(new Date(new Date().getTime() - 1000 * 60 * 60 * 24)),
+      },
     });
     return response;
   }
@@ -51,11 +54,11 @@ export default class LikeResolver {
   }
 
   @Authorized()
-  @Mutation(() => String)
+  @Mutation(() => Like)
   async addLike(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
     @Arg("idProject") idProject: number,
-  ): Promise<string> {
+  ): Promise<Like> {
     const {
       userFromToken: { userId },
     } = context;
@@ -81,15 +84,34 @@ export default class LikeResolver {
       throw new Error("Like already existing with this user on this project");
     }
 
+    const nbLikes = await dataSource.manager.getRepository(Like).count({
+      where: {
+        date: MoreThan(new Date(new Date().getTime() - 1000 * 60 * 60 * 24)),
+        project: { id: idProject },
+      },
+    });
+
+    const user = await dataSource.manager.getRepository(User).findOneByOrFail({
+      id: userId,
+    });
+
+    if (user.premium === false && nbLikes >= 5) {
+      throw new Error("You have reached the maximum number of likes per day");
+    }
+
     const like = new Like();
+    like.date = new Date();
     like.project = projectToLike;
     like.user = await dataSource.manager.getRepository(User).findOneByOrFail({
       id: userId,
     });
 
     try {
-      await dataSource.manager.save(Like, like);
-      return `Like saved`;
+      const likeSaved = await dataSource.manager.save(Like, like);
+      return await dataSource.manager.getRepository(Like).findOneOrFail({
+        where: { id: likeSaved.id },
+        relations: { project: { likes: true }, user: true },
+      });
     } catch {
       throw new Error("Error while saving like on this project");
     }

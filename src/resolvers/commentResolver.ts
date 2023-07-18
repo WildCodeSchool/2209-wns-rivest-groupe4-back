@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from "type-graphql";
-
+import { MoreThan } from "typeorm";
 import dataSource from "../dataSource";
 import Project from "../entities/project";
 import User from "../entities/user";
@@ -9,7 +9,9 @@ import Comment from "../entities/comment";
 export default class CommentResolver {
   @Query(() => [Comment])
   async getAllComments() {
-    return await dataSource.getRepository(Comment).find();
+    return await dataSource
+      .getRepository(Comment)
+      .find({ relations: { project: true } });
   }
 
   @Authorized()
@@ -27,7 +29,7 @@ export default class CommentResolver {
 
   @Authorized()
   @Query(() => [Comment])
-  async getAllCommentsByUser(
+  async getMonthlyCommentsByUser(
     @Ctx() context: { userFromToken: { userId: string; email: string } },
   ) {
     const {
@@ -39,7 +41,12 @@ export default class CommentResolver {
     });
 
     const response = await dataSource.getRepository(Comment).find({
-      where: { user },
+      where: {
+        user,
+        createdAt: MoreThan(
+          new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+        ),
+      },
     });
     return response;
   }
@@ -79,7 +86,10 @@ export default class CommentResolver {
 
     try {
       const commentInBD = await dataSource.manager.save(Comment, newComment);
-      return commentInBD;
+      return await dataSource.getRepository(Comment).findOneOrFail({
+        where: { id: commentInBD.id },
+        relations: { project: { comments: { user: true } }, user: true },
+      });
     } catch {
       throw new Error("Error while saving comment");
     }
@@ -121,7 +131,10 @@ export default class CommentResolver {
         Comment,
         commentToUpdate,
       );
-      return commentSaved;
+      return await dataSource.getRepository(Comment).findOneOrFail({
+        where: { id: commentSaved.id },
+        relations: { project: { comments: true }, user: true },
+      });
     } catch {
       throw new Error("Error while modifying the comment");
     }

@@ -6,10 +6,10 @@ import {
   GET_TOKEN,
   ADD_LIKE,
   DELETE_LIKE,
-  GET_ALL_LIKES_BY_USER,
+  GET_MONTHLY_LIKES_BY_USER,
   PROJECT_IS_LIKED,
 } from "./tools/gql";
-import { testUserData, testUserData2 } from "./data/users";
+import { testUserData, testUserData2, testUserData3 } from "./data/users";
 import { testProjectData } from "./data/projects";
 
 const likeTests = () => {
@@ -80,7 +80,15 @@ const likeTests = () => {
           idProject: parseInt(projectId, 10),
         },
       });
-      expect(res.data?.addLike).toBe("Like saved");
+      expect(res.data?.addLike).toMatchObject({
+        id: expect.any(String),
+        project: {
+          id: projectId,
+        },
+        user: {
+          id: tokenLiker.data?.getTokenWithUser.user.id,
+        },
+      });
     });
 
     it("returns false when the project isn't liked", async () => {
@@ -238,14 +246,14 @@ const likeTests = () => {
         },
       });
       const res = await client.query({
-        query: GET_ALL_LIKES_BY_USER,
+        query: GET_MONTHLY_LIKES_BY_USER,
         context: {
           headers: {
             authorization: tokenLiker.data?.getTokenWithUser.token,
           },
         },
       });
-      expect(res.data?.getAllLikesByUser.length).toBeGreaterThanOrEqual(1);
+      expect(res.data?.getMonthlyLikesByUser.length).toBeGreaterThanOrEqual(1);
     });
 
     it("deletes like", async () => {
