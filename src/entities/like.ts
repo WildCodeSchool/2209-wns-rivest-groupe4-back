@@ -1,5 +1,10 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import Project from "./project";
 import User from "./user";
 
@@ -13,6 +18,10 @@ export default class Like {
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.likes, { onDelete: "CASCADE" })
   user: User;
+
+  @Field()
+  @CreateDateColumn()
+  date: Date;
 
   @Field(() => Project)
   @ManyToOne(() => Project, (project) => project.likes, { onDelete: "CASCADE" })

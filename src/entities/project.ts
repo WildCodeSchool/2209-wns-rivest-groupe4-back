@@ -50,7 +50,7 @@ export default class Project {
   @ManyToOne(() => User, (user) => user.projects, { onDelete: "CASCADE" })
   user: User;
 
-  @Field(() => [Like], { nullable: true })
+  @Field(() => [Like])
   @OneToMany(() => Like, (like) => like.project)
   likes?: Like[];
 
